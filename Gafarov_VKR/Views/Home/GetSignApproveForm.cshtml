@@ -1,0 +1,50 @@
+﻿<form id="infoForm">
+    <div class="form-outline">
+        <label class="form-label">Средний уровень сложности</label>
+        <input type="number" id="difficultyLevel" class="form-control" min="1" max="10" value="@ViewBag.SelectedObject.DifficultyLevelValue.ToString()" readonly="readonly" />
+    </div>
+    @{
+        if (ViewBag.SelectedObject.Editable == false)
+        {
+            <div class="form-outline">
+                <label class="form-label">Тип элемента</label>
+                <select class="form-select" id="elementType" onchange="OnSignPropertyEdit()">
+                    @{
+                        foreach (var signType in ViewBag.SignTypes)
+                        {
+                            if (signType == ViewBag.SelectedObject.SignTypeName)
+                            {
+                                <option selected value="@signType">@signType</option>
+                            }
+                            else
+                            {
+                                <option value="@signType">@signType</option>
+                            }
+
+                        }
+                    }
+                </select>
+            </div>
+        }
+        else
+        {
+            <div class="form-outline">
+                <label class="form-label">Тип элемента</label>
+                <input type="text" id="elementType" class="form-control" value="@ViewBag.SelectedObject.SignTypeName" readonly="readonly" />
+            </div>
+        }
+    }
+    <div class="form-outline">
+        @{
+            if (ViewBag.SelectedObject.Editable)
+            {
+                <button type="button" id="approve" class="btn btn-primary " onclick="OnSignAccept()">Одобрить знак</button>
+            }
+            else
+            {
+                <button type="button" id="disapprove" class="btn btn-primary " onclick="OnSignResetAccept()">Отклонить знак</button>
+            }
+        }
+
+    </div>
+</form>

@@ -1,0 +1,60 @@
+﻿
+@{
+    ViewBag.Title = "Алгоритма";
+}
+
+<h2>Algorithm</h2>
+<div class="jumbotron">
+    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
+    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <h3>Заполните форму с данными о ваших проблемах</h3>
+    </div>
+    <div class="col-md-12">
+        <div class="form-outline">
+            @{
+                <label class="form-label">Знаки</label>
+                var counter = 0;
+                foreach (var signType in ViewBag.SignTypes)
+                {
+                    <label class="form-label">@signType</label>
+                    var id = "signProblem_"+counter;
+                    <input type="number" id="@id" class="form-control" onchange="OnSignPropertyEdit(this.id)" onblur="onSignProblemPoleBlur(this.id)" value="1" />
+                    counter += 1;
+                }
+                <hr>
+                counter = 0;
+                <label class="form-label">Манёвры</label>
+                foreach (var maneuverType in ViewBag.ManeuverTypes)
+                {
+                    <label class="form-label">@maneuverType</label>
+                    var id = "maneuverProblem_" + counter;
+                    <input type="number" id="@id" class="form-control" onchange="OnManeuverPropertyEdit(this.id)" onblur="onManeuverProblemPoleBlur(this.id)" value="1" />
+                    counter += 1;
+                }
+                <hr>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        <div id="mapid" style="height: 480px"></div>
+    </div>
+    <div class="col-md-2">
+        <h2>Get more libraries</h2>
+        <button type="button" id="startPositionButton" class="btn btn-primary" onclick="setStartPosition()">Указать моё месторасположение</button>
+        <button type="button" id="cancelBuildButton" class="btn btn-primary hide" onclick="cancelPosition()">Отменить указание месторасположения</button>
+        <button type="button" id="algorithmButton" class="btn btn-primary " onclick="startAlgorithm()" disabled>Построить мой маршрут</button>
+    </div>
+    <div class="col-md-12">
+        <div id="propertyEditor">
+
+        </div>
+    </div>
+</div>
+
+@Scripts.Render("~/bundles/algorithmScripts")

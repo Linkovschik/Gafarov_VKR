@@ -1,0 +1,41 @@
+﻿<form id="infoForm">
+    @{
+        if (ViewBag.SelectedObject.Editable == true)
+        {
+            <div class="form-outline">
+                <label class="form-label">Уровень сложности</label>
+                <input type="number" id="difficultyLevel" class="form-control" min="1" max="10" oninput="onDifficultyLevelInput()" onchange="OnManeuverPropertyEdit()" value="@ViewBag.SelectedObject.DifficultyLevelValue.ToString()" />
+            </div>
+            <div class="form-outline">
+                <label class="form-label">Тип элемента</label>
+                <select class="form-select" id="elementType" onchange="OnManeuverPropertyEdit()">
+                    @{
+                        foreach (var maneuverType in ViewBag.ManeuverTypes)
+                        {
+                            if (maneuverType == ViewBag.SelectedObject.ManeuverTypeName)
+                            {
+                                <option selected value="@maneuverType">@maneuverType</option>
+                            }
+                            else
+                            {
+                                <option value="@maneuverType">@maneuverType</option>
+                            }
+
+                        }
+                    }
+                </select>
+            </div>
+        }
+        else
+        {
+            <div class="form-outline">
+                <label class="form-label">Уровень сложности</label>
+                <input type="number" id="difficultyLevel" class="form-control" value="@ViewBag.SelectedObject.DifficultyLevelValue.ToString()" readonly="readonly" />
+            </div>
+            <div class="form-outline">
+                <label class="form-label">Тип элемента</label>
+                <input type="text" id="elementType" class="form-control" value="@ViewBag.SelectedObject.ManeuverTypeName" readonly="readonly" />
+            </div>
+        }
+    }
+</form>

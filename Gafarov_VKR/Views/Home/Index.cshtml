@@ -1,0 +1,42 @@
+﻿@{
+    ViewBag.Title = "Кабинет пользователя";
+}
+<div class="jumbotron">
+    <h1>Кабинет пользователя</h1>
+    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
+    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        <div id="mapid" style="height: 480px"></div>
+    </div>
+    <div class="col-md-2">
+        <h2>Get more libraries</h2>
+        <button type="button" id="signButton" class="btn btn-primary" onclick="startSign()">Указать знак</button>
+        <button type="button" id="maneuverButton" class="btn btn-primary" onclick="startManeuver()">Указать манёвр</button>
+        <button type="button" id="cancelBuildButton" class="btn btn-primary hide" onclick="cancelSign()">Отменить установку знака</button>
+        <button type="button" id="deleteSelectedButton" class="btn btn-primary " onclick="selectingObjectsToDelete()">Выделить для удаления</button>
+        <button type="button" id="saveChangesButton" class="btn btn-primary " onclick="acceptChanges()">Сохранить изменения</button>
+
+    </div>
+    <div class="col-md-12">
+        <div id="propertyEditor">
+
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div id="displayType">
+            <form id="displayTypeChoose">
+                <select id="displayTypeSelector" class="form-select" aria-label="Default select example" onchange="UpdateMapContent()">
+                    <option selected value="Все">Все маркеры</option>
+                    <option value="Предложенные">Предложенные мной маркеры</option>
+                    <option value="Одобренные">Одобренные администрацией маркеры</option>
+                </select>
+            </form>
+        </div>
+    </div>
+</div>
+
+@Scripts.Render("~/bundles/arthurScripts")
+
