@@ -33,6 +33,47 @@
             </form>
         </div>
     </div>
+    <div class="col-md-12 hide" id="suggestedInfo">
+        <label class="form-label">Сейчас выбраны предложенные:</label>
+        <label class="form-label" id="currentSelectedUser">НИКТО</label>
+        <br />
+        <div class="panel panel-primary" id="result_panel">
+        </div>
+    </div>
+    <div class="col-md-12">
+        <label class="form-label">Настройка штрафов</label>
+        <br />
+        <div class="form-outline">
+            @{
+                <label class="form-label">Знаки</label>
+                foreach (var signTypeData in ViewBag.SignTypeData)
+                {
+                    <label class="form-label">@signTypeData.SignTypeName</label>
+                    var id = "signProblem_" + signTypeData.SignTypeId;
+                    <input type="number" id="@id" class="form-control" onchange="OnSignPenaltyEdit(this.id)" onblur="onSignPenaltyPoleBlur(this.id)" value="@signTypeData.SignTypePenalty.ToString()" />
+                }
+                <hr>
+                <label class="form-label">Манёвры</label>
+                foreach (var maneuverTypeData in ViewBag.ManeuverTypeData)
+                {
+                    <label class="form-label">@maneuverTypeData.ManeuverTypeName</label>
+                    var id = "maneuverProblem_" + maneuverTypeData.ManeuverTypeId;
+                    <input type="number" id="@id" class="form-control" onchange="OnManeuverPenaltyEdit(this.id)" onblur="onManeuverPenaltyPoleBlur(this.id)" value="@maneuverTypeData.ManeuverTypePenalty.ToString()" />
+                }
+                <hr>
+            }
+        </div>
+    </div>
 </div>
+
+<style>
+    .list-group {
+        min-height: 100px;
+        max-height: 150px;
+        margin-bottom: 10px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+</style>
 
 @Scripts.Render("~/bundles/adminScripts")

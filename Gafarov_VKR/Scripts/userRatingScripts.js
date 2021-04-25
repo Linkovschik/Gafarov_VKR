@@ -266,6 +266,7 @@ class Maneuver extends UserInput {
         id,
         startMarker,
         endMarker,
+        polyline,
         difficultyLevel,
         averageDifficultyLevel,
         maneuverTypeName
@@ -275,6 +276,7 @@ class Maneuver extends UserInput {
         this.Id = id;
         this.StartMarker = startMarker;
         this.EndMarker = endMarker;
+        this.Polyline = polyline;
 
         this.Selected = false;
         this.MapStructure = mapStructure;
@@ -287,11 +289,16 @@ class Maneuver extends UserInput {
     ResetSelect() {
         this.StartMarker.setIcon(this.GreenIcon);
         this.EndMarker.setIcon(this.RedIcon);
+        this.Polyline.deleteArrowheads();
+        mapStructure.FiguresOnMap.removeLayer(this.Polyline);
         this.Selected = false;
+
     }
     SetSelect() {
-        this.StartMarker.setIcon(this.BlueIcon);
+        this.StartMarker.setIcon(this.BlackIcon);
         this.EndMarker.setIcon(this.BlackIcon);
+        this.Polyline.arrowheads();
+        mapStructure.FiguresOnMap.addLayer(this.Polyline);
         this.Selected = true;
     }
 
@@ -304,10 +311,19 @@ class Maneuver extends UserInput {
             Lat: this.EndMarker.getLatLng().lat,
             Lng: this.EndMarker.getLatLng().lng
         }
+        var otherPoints = [];
+        this.Polyline.getLatLngs().forEach(g => {
+            otherPoints.push(
+                L.latLng(g.lat, g.lng)
+            )
+        })
+        otherPoints.splice(0, 1);
+        otherPoints.splice(otherPoints.length - 1, 1);
         var result = {
             ManeuverId: this.Id,
             StartMarkerPoint: startPoint,
             EndMarkerPoint: endPoint,
+            OtherPoints: otherPoints,
             DifficultyLevelValue: this.DifficultyLevel,
             AverageDifficultyLevel: this.AverageDifficultyLevel,
             ManeuverTypeName: this.ManeuverTypeName,
@@ -416,6 +432,13 @@ function LoadManeuversFromDB() {
                 var endPoint = L.latLng(maneuver.EndMarkerPoint.Lat, maneuver.EndMarkerPoint.Lng);
                 var startMarker = L.marker(startPoint, { icon: mapStructure.BlackIcon });
                 var endMarker = L.marker(endPoint, { icon: mapStructure.BlackIcon });
+                var coords = [];
+                coords.push(startPoint);
+                maneuver.OtherPoints.forEach(otherPoint => {
+                    coords.push(L.latLng(otherPoint.Lat, otherPoint.Lng));
+                })
+                coords.push(endPoint);
+                var polyline = L.polyline(coords);
                 var maneuverToLoad = new Maneuver(
                     maneuver.CreatorUserId,
                     maneuver.RatedUserId,
@@ -423,6 +446,7 @@ function LoadManeuversFromDB() {
                     maneuver.ManeuverId,
                     startMarker,
                     endMarker,
+                    polyline,
                     maneuver.DifficultyLevelValue,
                     maneuver.AverageDifficultyLevel,
                     maneuver.ManeuverTypeName);

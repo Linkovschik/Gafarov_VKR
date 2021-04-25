@@ -66,6 +66,85 @@ function ToggleSelected(found) {
     }
 }
 
+function chooseAnotherUser(userId) {
+    mapStructure.LastSelectedUserWithSuggestionId = userId;
+    UpdateMapContent();
+    var user = smthSuggestedUsers.find(x => x.Id == userId);
+    if (user != null)
+        $("#currentSelectedUser").text(user.Login);
+    else {
+        $("#currentSelectedUser").text("НИКТО");
+    }
+}
+
+class UserData {
+    constructor() {
+        this.SignTypeData = new Map();
+        this.ManeuverTypeData = new Map();
+    }
+
+    setSignTypeData(signTypeId, signTypePenalty) {
+        this.SignTypeData.set(signTypeId, signTypePenalty);
+    }
+
+    setManeuverTypeData(maneuverTypeId, maneuverTypePenalty) {
+        this.ManeuverTypeData.set(maneuverTypeId, maneuverTypePenalty);
+    }
+}
+
+function onSignPenaltyPoleBlur(elementId) {
+    var index = elementId.indexOf('_');
+    if (index > -1) {
+        var keyIndex = Number.parseInt(elementId.substring(index + 1));
+        if (isNaN(keyIndex)) {
+            return;
+        }
+        var element = $("#" + elementId);
+        element[0].value = userData.SignTypeData.get(keyIndex);
+    }
+}
+function onManeuverPenaltyPoleBlur(elementId) {
+    var index = elementId.indexOf('_');
+    if (index > -1) {
+        var keyIndex = Number.parseInt(elementId.substring(index + 1));
+        if (isNaN(keyIndex)) {
+            return;
+        }
+        var element = $("#" + elementId);
+        element[0].value = userData.ManeuverTypeData.get(keyIndex);
+    }
+}
+function OnSignPenaltyEdit(elementId) {
+    var maxValue = 2147483646;
+    var index = elementId.indexOf('_');
+    if (index > -1) {
+        var keyIndex = Number.parseInt(elementId.substring(index + 1));
+        if (isNaN(keyIndex)) {
+            return;
+        }
+        var element = $("#" + elementId);
+        var value = Number.parseFloat(element.val());
+        if (!isNaN(value) && value >= 0 && value < maxValue) {
+            userData.SignTypeData.set(keyIndex, value);
+        }
+    }
+}
+function OnManeuverPenaltyEdit(elementId) {
+    var maxValue = 2147483646;
+    var index = elementId.indexOf('_');
+    if (index > -1) {
+        var keyIndex = Number.parseInt(elementId.substring(index + 1));
+        if (isNaN(keyIndex)) {
+            return;
+        }
+        var element = $("#" + elementId);
+        var value = Number.parseFloat(element.val());
+        if (!isNaN(value) && value >= 0 && value < maxValue) {
+            userData.ManeuverTypeData.set(keyIndex, value);
+        }
+    }
+}
+
 class UserInput {
     constructor(
         userId,
@@ -107,7 +186,6 @@ class UserInput {
         });
     }
 }
-
 function onDifficultyLevelInput() {
     var elements = $("#difficultyLevel");
     var currentValue = Number.parseInt(elements[0].value);
@@ -218,10 +296,18 @@ class Sign extends UserInput {
     ResetSelect() {
         this.Marker.setIcon(this.BlueIcon);
         this.Selected = false;
+
+        this.Marker.off('dragend', OnSignEdit);
+        this.Marker.draggable = false;
+        this.Marker.dragging.disable();
     }
     SetSelect() {
         this.Marker.setIcon(this.BlackIcon);
         this.Selected = true;
+
+        this.Marker.on('dragend', OnSignEdit);
+        this.Marker.draggable = true;
+        this.Marker.dragging.enable();
     }
 
     getObjectSendForm() {
@@ -248,6 +334,18 @@ function OnManeuverEdit(e) {
     if (found.Id > 0 && !mapStructure.LoadedObjectsToChange.includes(found)) {
         mapStructure.LoadedObjectsToChange.push(found);
     }
+    found.Polyline.disableEdit();
+    var coords = found.Polyline.getLatLngs()
+    if (coords[0].lat != found.StartMarker.getLatLng().lat ||
+        coords[0].lng != found.StartMarker.getLatLng().lng) {
+        coords[0] = found.StartMarker.getLatLng();
+    }
+    if (coords[coords.length - 1].lat != found.EndMarker.getLatLng().lat ||
+        coords[coords.length - 1].lng != found.EndMarker.getLatLng().lng) {
+        coords[coords.length - 1] = found.EndMarker.getLatLng();
+    }
+    found.Polyline.setLatLngs(coords);
+    found.Polyline.enableEdit();
 }
 function OnManeuverPropertyEdit(e) {
     onDifficultyLevelInput();
@@ -282,6 +380,30 @@ function OnManeuverClick(e) {
             break;
     }
 }
+function OnPolylineDrag(e) {
+    e.target.deleteArrowheads();
+    e.target.arrowheads();
+}
+function OnManeuverPolylineEdit(e) {
+    var found = mapStructure.ObjectsOnMap.find((element) => {
+        return element.Polyline === e.target;
+    });
+    if (found.Id > 0 && !mapStructure.LoadedObjectsToChange.includes(found)) {
+        mapStructure.LoadedObjectsToChange.push(found);
+    }
+    found.Polyline.disableEdit();
+    var coords = found.Polyline.getLatLngs()
+    if (coords[0].lat != found.StartMarker.getLatLng().lat ||
+        coords[0].lng != found.StartMarker.getLatLng().lng) {
+        coords[0] = found.StartMarker.getLatLng();
+    }
+    if (coords[coords.length - 1].lat != found.EndMarker.getLatLng().lat ||
+        coords[coords.length - 1].lng != found.EndMarker.getLatLng().lng) {
+        coords[coords.length - 1] = found.EndMarker.getLatLng();
+    }
+    found.Polyline.setLatLngs(coords);
+    found.Polyline.enableEdit();
+}
 function OnManeuverAccept(e) {
     mapStructure.SelectedObject.Editable = false;
     updatePropertyEditor(mapStructure.SelectedObject);
@@ -313,6 +435,7 @@ class Maneuver extends UserInput {
         id,
         startMarker,
         endMarker,
+        polyline,
         difficultyLevel,
         maneuverTypeName
     ) {
@@ -320,6 +443,7 @@ class Maneuver extends UserInput {
         this.Id = id;
         this.StartMarker = startMarker;
         this.EndMarker = endMarker;
+        this.Polyline = polyline;
 
         this.Selected = false;
         this.MapStructure = mapStructure;
@@ -331,12 +455,43 @@ class Maneuver extends UserInput {
     ResetSelect() {
         this.StartMarker.setIcon(this.GreenIcon);
         this.EndMarker.setIcon(this.RedIcon);
+        this.Polyline.deleteArrowheads();
+        mapStructure.FiguresOnMap.removeLayer(this.Polyline);
         this.Selected = false;
+
+        this.StartMarker.off('dragend', OnManeuverEdit);
+        this.EndMarker.off('dragend', OnManeuverEdit);
+        this.Polyline.off('editable:vertex:dragend', OnManeuverPolylineEdit);
+        this.Polyline.off('editable:vertex:clicked', OnManeuverPolylineEdit);
+        this.Polyline.off('editable: vertex: drag', OnPolylineDrag);
+
+
+        this.StartMarker.draggable = false;
+        this.StartMarker.dragging.disable();
+        this.EndMarker.draggable = false;
+        this.EndMarker.dragging.disable();
+        this.Polyline.disableEdit();
+
     }
     SetSelect() {
-        this.StartMarker.setIcon(this.BlueIcon);
+        this.StartMarker.setIcon(this.BlackIcon);
         this.EndMarker.setIcon(this.BlackIcon);
+        this.Polyline.arrowheads();
+        mapStructure.FiguresOnMap.addLayer(this.Polyline);
         this.Selected = true;
+
+        this.StartMarker.on('dragend', OnManeuverEdit);
+        this.EndMarker.on('dragend', OnManeuverEdit);
+        this.Polyline.on('editable:vertex:dragend', OnManeuverPolylineEdit);
+        this.Polyline.on('editable:vertex:clicked', OnManeuverPolylineEdit);
+        this.Polyline.on('editable: vertex: drag', OnPolylineDrag);
+
+        this.StartMarker.draggable = true;
+        this.StartMarker.dragging.enable();
+        this.EndMarker.draggable = true;
+        this.EndMarker.dragging.enable();
+        this.Polyline.enableEdit();
+
     }
 
     getObjectSendForm() {
@@ -348,10 +503,20 @@ class Maneuver extends UserInput {
             Lat: this.EndMarker.getLatLng().lat,
             Lng: this.EndMarker.getLatLng().lng
         }
+        var otherPoints = [];
+        this.Polyline.getLatLngs().forEach(g => {
+            otherPoints.push(
+                L.latLng(g.lat, g.lng)
+            )
+        })
+        otherPoints.splice(0, 1);
+        otherPoints.splice(otherPoints.length - 1, 1);
+
         var result = {
             Id: this.Id,
             StartMarkerPoint: startPoint,
             EndMarkerPoint: endPoint,
+            OtherPoints: otherPoints,
             DifficultyLevelValue: this.DifficultyLevel,
             ManeuverTypeName: this.ManeuverTypeName,
             UserId: this.UserId,
@@ -411,6 +576,7 @@ class MapStructure {
         });
         this.AddedMarkers = [];
         this.SelectedObject = null;
+        this.LastSelectedUserWithSuggestionId = 0;
     }
 }
 const MapStatesEnum = { "Nothing": 0, "Deleting": 1 };
@@ -418,6 +584,12 @@ Object.freeze(MapStatesEnum);
 var mapStructure = new MapStructure();
 LoadSignsFromDB();
 LoadManeuversFromDB();
+var userData = new UserData();
+var smthSuggestedUsers = [];
+LoadSignTypeDataFromDB();
+LoadManeuverTypeDataFromDB();
+LoadUserChoose();
+UpdateMapContent();
 
 function onMapClick(e) {
 }
@@ -435,11 +607,7 @@ function LoadSignsFromDB() {
                 var marker = L.marker(point, { icon: mapStructure.BlackIcon });
                 var editable = sign.Editable;
                 var signToLoad = new Sign(sign.UserId, editable, sign.Id, marker, sign.DifficultyLevelValue, sign.SignTypeName);
-                mapStructure.FiguresOnMap.addLayer(marker);
                 signToLoad.Marker.on('click', OnSignClick);
-                signToLoad.Marker.on('dragend', OnSignEdit);
-                signToLoad.Marker.draggable = true;
-                signToLoad.Marker.dragging.enable();
                 mapStructure.ObjectsOnMap.push(signToLoad);
             });
         })
@@ -458,18 +626,18 @@ function LoadManeuversFromDB() {
                 var endPoint = L.latLng(maneuver.EndMarkerPoint.Lat, maneuver.EndMarkerPoint.Lng);
                 var startMarker = L.marker(startPoint, { icon: mapStructure.BlackIcon });
                 var endMarker = L.marker(endPoint, { icon: mapStructure.BlackIcon });
+                var coords = [];
+                coords.push(startPoint);
+                maneuver.OtherPoints.forEach(otherPoint => {
+                    coords.push(L.latLng(otherPoint.Lat, otherPoint.Lng));
+                })
+                coords.push(endPoint);
+                var polyline = L.polyline(coords);
                 var editable = maneuver.Editable;
-                var maneuverToLoad = new Maneuver(maneuver.UserId, editable, maneuver.Id, startMarker, endMarker, maneuver.DifficultyLevelValue, maneuver.ManeuverTypeName);
-                mapStructure.FiguresOnMap.addLayer(startMarker);
-                mapStructure.FiguresOnMap.addLayer(endMarker);
+                var maneuverToLoad = new Maneuver(maneuver.UserId, editable, maneuver.Id, startMarker, endMarker, polyline, maneuver.DifficultyLevelValue, maneuver.ManeuverTypeName);
                 maneuverToLoad.StartMarker.on('click', OnManeuverClick);
                 maneuverToLoad.EndMarker.on('click', OnManeuverClick);
-                maneuverToLoad.StartMarker.on('dragend', OnManeuverEdit);
-                maneuverToLoad.EndMarker.on('dragend', OnManeuverEdit);
-                maneuverToLoad.StartMarker.draggable = true;
-                maneuverToLoad.StartMarker.dragging.enable();
-                maneuverToLoad.EndMarker.draggable = true;
-                maneuverToLoad.EndMarker.dragging.enable();
+
                 mapStructure.ObjectsOnMap.push(maneuverToLoad);
             });
         })
@@ -477,6 +645,70 @@ function LoadManeuversFromDB() {
             var err = textStatus + ', ' + error;
         })
 }
+
+function LoadSignTypeDataFromDB() {
+    $.getJSON({
+        url: '/Home/GetSignTypesForAdmin',
+        async: false
+    })
+        .done(function (data) {
+            data.forEach((signTypeData) => {
+                userData.setSignTypeData(signTypeData.SignTypeId, signTypeData.SignTypePenalty);
+            });
+        })
+        .fail(function (jqxhr, textStatus, error) {
+            var err = textStatus + ', ' + error;
+        })
+}
+function LoadManeuverTypeDataFromDB() {
+    $.getJSON({
+        url: '/Home/GetManeuverTypesForAdmin',
+        async: false
+    })
+        .done(function (data) {
+            data.forEach((maneuverTypeData) => {
+                userData.setManeuverTypeData(maneuverTypeData.ManeuverTypeId, maneuverTypeData.ManeuverTypePenalty);
+            });
+        })
+        .fail(function (jqxhr, textStatus, error) {
+            var err = textStatus + ', ' + error;
+        })
+}
+
+
+function LoadUserChoose() {
+    smthSuggestedUsers = [];
+    $.getJSON({
+        url: '/Home/GetSmthSuggestedUserList',
+        async: false
+    })
+    .done(function (data) {
+        data.forEach((user) => {
+            smthSuggestedUsers.push({
+                Id: user.Id,
+                Login: user.Login
+            })
+        });
+    })
+    .fail(function (jqxhr, textStatus, error) {
+        var err = textStatus + ', ' + error;
+    })
+
+    $('#result_panel').empty();
+    $.ajax({
+        url: '/Home/GetSmthSuggestedUsers',         /* Куда пойдет запрос */
+        method: 'get',             /* Метод передачи (post или get) */
+        dataType: 'html',          /* Тип данных в ответе (xml, json, script, html). */
+        contentType: 'application/json; charset=utf-8',
+        async: false,
+    }).done(function (gotData) {
+        $('#result_panel').html(gotData);
+    }).fail(function (jqxhr, textStatus, error) {
+        var err = textStatus + ', ' + error;
+        console.log(err);
+    });
+}
+
 function UpdateMapContent() {
     if(mapStructure.SelectedObject != null) {
         mapStructure.SelectedObject.ResetSelect();
@@ -487,8 +719,9 @@ function UpdateMapContent() {
     var displayType = $("#displayTypeSelector :selected").val();
     switch (displayType) {
         case "Предложенные":
+            $("#suggestedInfo").removeClass('hide');
             mapStructure.ObjectsOnMap.forEach(obj => {
-                if (obj.Editable) {
+                if (obj.Editable && obj.UserId == mapStructure.LastSelectedUserWithSuggestionId) {
                     if (obj instanceof Sign)
                         mapStructure.FiguresOnMap.addLayer(obj.Marker);
                     else {
@@ -499,6 +732,7 @@ function UpdateMapContent() {
             });
             break;
         case "Одобренные":
+            $("#suggestedInfo").addClass('hide');
             mapStructure.ObjectsOnMap.forEach(obj => {
                 if (!obj.Editable) {
                     if (obj instanceof Sign)
@@ -511,12 +745,15 @@ function UpdateMapContent() {
             });
             break;
         case "Все":
+            $("#suggestedInfo").removeClass('hide');
             mapStructure.ObjectsOnMap.forEach(obj => {
-                if (obj instanceof Sign)
-                    mapStructure.FiguresOnMap.addLayer(obj.Marker);
-                else {
-                    mapStructure.FiguresOnMap.addLayer(obj.StartMarker);
-                    mapStructure.FiguresOnMap.addLayer(obj.EndMarker);
+                if (obj.Editable && obj.UserId == mapStructure.LastSelectedUserWithSuggestionId || !obj.Editable) {
+                    if (obj instanceof Sign)
+                        mapStructure.FiguresOnMap.addLayer(obj.Marker);
+                    else {
+                        mapStructure.FiguresOnMap.addLayer(obj.StartMarker);
+                        mapStructure.FiguresOnMap.addLayer(obj.EndMarker);
+                    }
                 }
             });
             break;
@@ -604,6 +841,7 @@ function acceptChanges() {
     sendObjectsToApprove();
     sendObjectsToDisapprove();
     sendObjectsToRemove();
+    sendUserDataToChange();
 }
 
 function sendSignDataToRemove(signDataToSend) {
@@ -777,4 +1015,48 @@ function sendObjectsToChange() {
     sendSignDataToChange(signDataToSend);
     sendManeuverDataToChange(maneuverDataToSend);
     mapStructure.LoadedObjectsToChange = [];
+}
+
+function sendSignTypeData(signTypeData) {
+    $.ajax({
+        url: '/Home/ChangeSignTypePenaltyData',         /* Куда пойдет запрос */
+        method: 'post',             /* Метод передачи (post или get) */
+        dataType: 'json',          /* Тип данных в ответе (xml, json, script, html). */
+        data: JSON.stringify(signTypeData),
+        contentType: 'application/json; charset=utf-8',
+        async: false,
+    });
+}
+function sendManeuverTypeData(maneuverTypeData) {
+    $.ajax({
+        url: '/Home/ChangeManeuverTypePenaltyData',         /* Куда пойдет запрос */
+        method: 'post',             /* Метод передачи (post или get) */
+        dataType: 'json',          /* Тип данных в ответе (xml, json, script, html). */
+        data: JSON.stringify(maneuverTypeData),
+        contentType: 'application/json; charset=utf-8',
+        async: false,
+    });
+}
+function sendUserDataToChange() {
+    if (userData == null && userData == undefined)
+        return;
+
+    var signTypeData = [];
+    var maneuverTypeData = [];
+    userData.SignTypeData.forEach((value, key) => {
+        signTypeData.push({
+            SignTypeId: key,
+            SignTypeName: "Нужен только ID",
+            SignTypePenalty: value
+        })
+    });
+    userData.ManeuverTypeData.forEach((value, key) => {
+        maneuverTypeData.push({
+            ManeuverTypeId: key,
+            ManeuverTypeName: "Нужен только ID",
+            ManeuverTypePenalty: value
+        })
+    });
+    sendSignTypeData(signTypeData);
+    sendManeuverTypeData(maneuverTypeData);
 }

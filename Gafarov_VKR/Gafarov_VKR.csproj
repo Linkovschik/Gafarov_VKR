@@ -51,10 +51,14 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="MathNet.Numerics, Version=4.15.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.4.15.0\lib\net461\MathNet.Numerics.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web.DynamicData" />
@@ -135,23 +139,37 @@
     <Compile Include="Models\AcceptedManeuvers.cs" />
     <Compile Include="Models\AcceptedSigns.cs" />
     <Compile Include="Models\Admin.cs" />
+    <Compile Include="Models\AlgorithmClass\Algorithm.cs" />
+    <Compile Include="Models\AlgorithmClass\BaseMark.cs" />
+    <Compile Include="Models\AlgorithmClass\Maneuver.cs" />
+    <Compile Include="Models\AlgorithmClass\Path.cs" />
+    <Compile Include="Models\AlgorithmClass\Point.cs" />
+    <Compile Include="Models\AlgorithmClass\Sign.cs" />
+    <Compile Include="Models\AlgorithmClass\Vector.cs" />
     <Compile Include="Models\DatabaseContext.cs" />
     <Compile Include="Models\DifficultyLevels.cs" />
     <Compile Include="Models\EndManeuverMarkers.cs" />
     <Compile Include="Models\ManeuverDifficlutyLevels.cs" />
     <Compile Include="Models\Maneuvers.cs" />
+    <Compile Include="Models\ManeuverTypePenalties.cs" />
     <Compile Include="Models\ManeuverTypes.cs" />
     <Compile Include="Models\Markers.cs" />
     <Compile Include="Models\MyModels\AcceptedManeuverModel.cs" />
     <Compile Include="Models\MyModels\AcceptedSignModel.cs" />
+    <Compile Include="Models\MyModels\AlgorithmResultModel.cs" />
     <Compile Include="Models\MyModels\ManeuverModel.cs" />
+    <Compile Include="Models\MyModels\ManeuverTypeModel.cs" />
     <Compile Include="Models\MyModels\PointModel.cs" />
     <Compile Include="Models\MyModels\SignModel.cs" />
+    <Compile Include="Models\MyModels\SignTypeModel.cs" />
     <Compile Include="Models\MyModels\UserDataModel.cs" />
     <Compile Include="Models\MyModels\UserModel.cs" />
+    <Compile Include="Models\MyModels\UserSafeModel.cs" />
+    <Compile Include="Models\OtherManeuverPoints.cs" />
     <Compile Include="Models\SignDifficlutyLevels.cs" />
     <Compile Include="Models\SignMarkers.cs" />
     <Compile Include="Models\Signs.cs" />
+    <Compile Include="Models\SignTypePenalties.cs" />
     <Compile Include="Models\SignTypes.cs" />
     <Compile Include="Models\StartManeuverMarkers.cs" />
     <Compile Include="Models\SuggestedManeuvers.cs" />
@@ -221,6 +239,7 @@
     <Content Include="Views\Home\GetManeuverUserEditForm.cshtml" />
     <Content Include="Views\Home\GetSignShowForm.cshtml" />
     <Content Include="Views\Home\GetManeuverShowtForm.cshtml" />
+    <Content Include="Views\Home\GetSmthSuggestedUsers.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />

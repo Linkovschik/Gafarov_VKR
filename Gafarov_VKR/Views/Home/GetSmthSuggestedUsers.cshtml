@@ -1,0 +1,30 @@
+﻿@{
+    if (ViewBag.SmthSuggestedUsers.Count > 0)
+    {
+        <div class="panel-heading">
+            <h3 class="panel-title">Список пользователей с предложениями</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="list-group">
+                @{
+                    string nothing ="НИКТО";
+                    int zero = 0;
+                    <li class="list-group-item">
+                        <button type="button" id="smthSuggestedUser" class="btn btn-primary " onclick="chooseAnotherUser(@zero)">Посмотреть @nothing</button>
+                    </li>
+                    foreach (var user in ViewBag.SmthSuggestedUsers)
+                    {
+                        <li class="list-group-item">
+                            <button type="button" id="smthSuggestedUser" class="btn btn-primary " onclick="chooseAnotherUser(@user.Id)">Посмотреть @user.Login</button>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    }
+    else
+    {
+        <label class="form-label">Никто ничего не предложил</label>
+    }
+}
+

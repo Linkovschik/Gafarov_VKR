@@ -19,7 +19,8 @@ namespace Gafarov_VKR.Controllers
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";
-
+            ViewBag.SignTypeData = getSignTypeAndPenalty();
+            ViewBag.ManeuverTypeData = getManeuverTypeAndPenalty();
             return View();
         }
         public ActionResult Contact()
@@ -45,7 +46,18 @@ namespace Gafarov_VKR.Controllers
             return JsonConvert.SerializeObject(getManeuverTypes(), Formatting.Indented);
         }
 
+        [HttpGet]
+        public string GetSignTypesForAdmin()
+        {
+            return JsonConvert.SerializeObject(getSignTypeAndPenalty(), Formatting.Indented);
+        }
+        [HttpGet]
+        public string GetManeuverTypesForAdmin()
+        {
+            return JsonConvert.SerializeObject(getManeuverTypeAndPenalty(), Formatting.Indented);
+        }
 
+ 
         [HttpPost]
         public PartialViewResult GetSignUserEditForm(Models.MyModels.AcceptedSignModel selectedSign)
         {
@@ -98,6 +110,44 @@ namespace Gafarov_VKR.Controllers
             ViewBag.SelectedObject = selectedManeuver;
             return PartialView();
         }
+
+        [HttpGet]
+        public PartialViewResult GetSmthSuggestedUsers(Models.MyModels.AcceptedSignModel selectedSign)
+        {
+            ViewBag.SmthSuggestedUsers = getSmthSuggestedUsers();
+            return PartialView();
+        }
+        [HttpGet]
+        public string GetSmthSuggestedUserList()
+        {
+            return JsonConvert.SerializeObject(getSmthSuggestedUsers(), Formatting.Indented);
+        }
+
+        private List<Models.MyModels.UserSafeModel> getSmthSuggestedUsers()
+        {
+            HashSet<int> userIds = new HashSet<int>();
+            List<Models.MyModels.UserSafeModel> result = new List<Models.MyModels.UserSafeModel>();
+            var usersWhoSuggestedSigns = from u in db.Users
+                                    join suggSign in db.SuggestedSigns on u.Id equals suggSign.User_Id
+                                    select u;
+            var usersWhoSuggestedManeuvers = from u in db.Users
+                                         join suggManeuver in db.SuggestedManeuvers on u.Id equals suggManeuver.User_Id
+                                         select u;
+            foreach(var user in usersWhoSuggestedSigns)
+            {
+                if(!userIds.Contains(user.Id))
+                {
+                    userIds.Add(user.Id);
+                    result.Add(new Models.MyModels.UserSafeModel()
+                    {
+                        Id = user.Id,
+                        Login = user.Login
+                    });
+                }
+            }
+            return result;
+        }
+
         private List<string> getManeuverTypes()
         {
             List<string> types = new List<string>();
@@ -115,6 +165,34 @@ namespace Gafarov_VKR.Controllers
                 types.Add(type.Name);
             }
             return types;
+        }
+
+        private List<Models.MyModels.ManeuverTypeModel> getManeuverTypeAndPenalty()
+        {
+            var maneuverTypeData = from mt in db.ManeuverTypes
+                                   join mtp in db.ManeuverTypePenalties on mt.Id equals mtp.ManeuverType_Id
+                                   select new Models.MyModels.ManeuverTypeModel()
+                                   {
+                                       ManeuverTypeId = mt.Id,
+                                       ManeuverTypeName = mt.Name,
+                                       ManeuverTypePenalty = mtp.Penalty 
+                                   };
+            List<Models.MyModels.ManeuverTypeModel> result = maneuverTypeData.ToList();
+            return result;
+        }
+        private List<Models.MyModels.SignTypeModel> getSignTypeAndPenalty()
+        {
+            var signTypeData =  from st in db.SignTypes
+                                join stp in db.SignTypePenalties on st.Id equals stp.SignType_Id
+                                select new Models.MyModels.SignTypeModel() 
+                                {
+                                    SignTypeId = st.Id,
+                                    SignTypeName = st.Name,
+                                    SignTypePenalty = stp.Penalty 
+                                };
+
+            List<Models.MyModels.SignTypeModel> result = signTypeData.ToList();
+            return result;
         }
 
         [HttpGet]
@@ -194,8 +272,15 @@ namespace Gafarov_VKR.Controllers
                 var diffLevel = db.DifficultyLevels.ToList().Find(st => st.Id == maneuverDiffLevel.DifficultyLevel_Id);
                 var startManeuverMarker = db.StartManeuverMarkers.ToList().Find(smm => smm.Maneuver_Id == maneuver.Id);
                 var endManeuverMarker = db.EndManeuverMarkers.ToList().Find(emm => emm.Maneuver_Id == maneuver.Id);
+                var otherManeuverPoints = db.OtherManeuverPoints.Where(omp => omp.Maneuver_Id == maneuver.Id);
                 var startMarker = db.Markers.ToList().Find(mk => mk.Id == startManeuverMarker.Marker_Id);
                 var endMarker = db.Markers.ToList().Find(mk => mk.Id == endManeuverMarker.Marker_Id);
+                var otherPoints = new List<Models.MyModels.PointModel>();
+                foreach(var otherManeuverPoint in otherManeuverPoints)
+                {
+                    var marker = db.Markers.ToList().Find(mk => mk.Id == otherManeuverPoint.Marker_Id);
+                    otherPoints.Add(new Models.MyModels.PointModel() { Lat = marker.Lat, Lng = marker.Lng });
+                }
 
                 bool isEditableManeuver = true;
                 var foundAccepted = db.AcceptedManeuvers.ToList().Find(t => t.Maneuver_Id == maneuver.Id && t.User_Id == userId);
@@ -207,6 +292,7 @@ namespace Gafarov_VKR.Controllers
                     Id = maneuver.Id,
                     StartMarkerPoint = new Models.MyModels.PointModel() { Lat = startMarker.Lat, Lng = startMarker.Lng },
                     EndMarkerPoint = new Models.MyModels.PointModel() { Lat = endMarker.Lat, Lng = endMarker.Lng },
+                    OtherPoints = otherPoints,
                     DifficultyLevelValue = diffLevel.Value,
                     ManeuverTypeName = maneuverType.Name,
                     UserId = userId,
@@ -285,8 +371,15 @@ namespace Gafarov_VKR.Controllers
 
                 var startManeuverMarker = db.StartManeuverMarkers.ToList().Find(smm => smm.Maneuver_Id == maneuver.Id);
                 var endManeuverMarker = db.EndManeuverMarkers.ToList().Find(emm => emm.Maneuver_Id == maneuver.Id);
+                var otherManeuverPoints = db.OtherManeuverPoints.Where(omp => omp.Maneuver_Id == maneuver.Id);
                 var startMarker = db.Markers.ToList().Find(mk => mk.Id == startManeuverMarker.Marker_Id);
                 var endMarker = db.Markers.ToList().Find(mk => mk.Id == endManeuverMarker.Marker_Id);
+                var otherPoints = new List<Models.MyModels.PointModel>();
+                foreach (var otherManeuverPoint in otherManeuverPoints)
+                {
+                    var marker = db.Markers.ToList().Find(mk => mk.Id == otherManeuverPoint.Marker_Id);
+                    otherPoints.Add(new Models.MyModels.PointModel() { Lat = marker.Lat, Lng = marker.Lng });
+                }
 
                 bool isEditableManeuver = true;
                 var foundAccepted = db.AcceptedManeuvers.ToList().Find(t => t.Maneuver_Id == maneuver.Id);
@@ -309,6 +402,7 @@ namespace Gafarov_VKR.Controllers
                     Id = maneuver.Id,
                     StartMarkerPoint = new Models.MyModels.PointModel() { Lat = startMarker.Lat, Lng = startMarker.Lng },
                     EndMarkerPoint = new Models.MyModels.PointModel() { Lat = endMarker.Lat, Lng = endMarker.Lng },
+                    OtherPoints = otherPoints,
                     DifficultyLevelValue = Convert.ToInt32(Math.Floor(averageManeuverDifficultyValue)),
                     ManeuverTypeName = maneuverType.Name,
                     UserId = userId,
@@ -405,9 +499,15 @@ namespace Gafarov_VKR.Controllers
 
                     var startManeuverMarker = db.StartManeuverMarkers.ToList().Find(smm => smm.Maneuver_Id == maneuver.Id);
                     var endManeuverMarker = db.EndManeuverMarkers.ToList().Find(emm => emm.Maneuver_Id == maneuver.Id);
+                    var otherManeuverPoints = db.OtherManeuverPoints.Where(omp => omp.Maneuver_Id == maneuver.Id);
                     var startMarker = db.Markers.ToList().Find(mk => mk.Id == startManeuverMarker.Marker_Id);
                     var endMarker = db.Markers.ToList().Find(mk => mk.Id == endManeuverMarker.Marker_Id);
-
+                    var otherPoints = new List<Models.MyModels.PointModel>();
+                    foreach (var otherManeuverPoint in otherManeuverPoints)
+                    {
+                        var marker = db.Markers.ToList().Find(mk => mk.Id == otherManeuverPoint.Marker_Id);
+                        otherPoints.Add(new Models.MyModels.PointModel() { Lat = marker.Lat, Lng = marker.Lng });
+                    }
 
                     //находим создателя
                     int userId = -1;
@@ -437,6 +537,7 @@ namespace Gafarov_VKR.Controllers
                         ManeuverId = maneuver.Id,
                         StartMarkerPoint = new Models.MyModels.PointModel() { Lat = startMarker.Lat, Lng = startMarker.Lng },
                         EndMarkerPoint = new Models.MyModels.PointModel() { Lat = endMarker.Lat, Lng = endMarker.Lng },
+                        OtherPoints = otherPoints,
                         DifficultyLevelValue = userDifficultyRate,
                         AverageDifficultyLevel = Convert.ToInt32(Math.Floor(averageManeuverDifficultyValue)),
                         ManeuverTypeName = maneuverType.Name,
@@ -492,6 +593,19 @@ namespace Gafarov_VKR.Controllers
                 Models.Maneuvers maneuver = new Models.Maneuvers() { ManeuverType_Id = maneuverType.Id };
                 Models.Markers startMarker = new Models.Markers() { Lat = dataOfManeuver.StartMarkerPoint.Lat, Lng = dataOfManeuver.StartMarkerPoint.Lng };
                 Models.Markers endMarker = new Models.Markers() { Lat = dataOfManeuver.EndMarkerPoint.Lat, Lng = dataOfManeuver.EndMarkerPoint.Lng };
+                List<Models.Markers> newOtherManeuverPointsMarkers = new List<Models.Markers>();
+                if(dataOfManeuver.OtherPoints!=null)
+                {
+                    foreach (var otherPoint in dataOfManeuver.OtherPoints)
+                    {
+                        newOtherManeuverPointsMarkers.Add(new Models.Markers()
+                        {
+                            Lat = otherPoint.Lat,
+                            Lng = otherPoint.Lng
+                        });
+                    }
+                    db.Markers.AddRange(newOtherManeuverPointsMarkers);
+                }
                 db.Markers.Add(startMarker);
                 db.Markers.Add(endMarker);
                 db.Maneuvers.Add(maneuver);
@@ -512,6 +626,16 @@ namespace Gafarov_VKR.Controllers
 
                 Models.SuggestedManeuvers suggestedManeuver = new Models.SuggestedManeuvers() { Maneuver_Id = maneuver.Id, User_Id = dataOfManeuver.UserId };
                 db.SuggestedManeuvers.Add(suggestedManeuver);
+
+
+                foreach (var marker in newOtherManeuverPointsMarkers)
+                {
+                    db.OtherManeuverPoints.Add(new Models.OtherManeuverPoints()
+                    {
+                        Marker_Id = marker.Id,
+                        Maneuver_Id = maneuver.Id
+                    });
+                }
 
                 db.SaveChanges();
             }
@@ -560,6 +684,12 @@ namespace Gafarov_VKR.Controllers
                                      join maneuver in db.Maneuvers on endManeuverMarker.Maneuver_Id equals maneuver.Id
                                      where maneuver.Id == maneuverToDelete.Id
                                      select marker;
+
+            var otherMarkersToDelete = from marker in db.Markers
+                                       join omp in db.OtherManeuverPoints on marker.Id equals omp.Marker_Id
+                                       join maneuver in db.Maneuvers on omp.Maneuver_Id equals maneuver.Id
+                                       where maneuver.Id == maneuverToDelete.Id
+                                       select marker;
 
             db.Markers.RemoveRange(startMarkersToDelete);
             db.Markers.RemoveRange(endMarkersToDelete);
@@ -673,6 +803,29 @@ namespace Gafarov_VKR.Controllers
                 var endMarker = db.Markers.ToList().Find(m => m.Id == endManeuverMarker.Marker_Id);
                 endMarker.Lat = dataOfManeuver.EndMarkerPoint.Lat;
                 endMarker.Lng = dataOfManeuver.EndMarkerPoint.Lng;
+
+                //пройдёмся по уже существующим othermaneuverPoints
+                var oldOtherManeuverPoints = db.OtherManeuverPoints.Where(omp => omp.Maneuver_Id == maneuver.Id);
+                db.OtherManeuverPoints.RemoveRange(oldOtherManeuverPoints);
+                var newOtherManeuverPointsMarkers = new List<Models.Markers>();
+                foreach(var otherPoint in dataOfManeuver.OtherPoints)
+                {
+                    newOtherManeuverPointsMarkers.Add(new Models.Markers()
+                    {
+                        Lat = otherPoint.Lat,
+                        Lng = otherPoint.Lng
+                    });
+                }
+                db.Markers.AddRange(newOtherManeuverPointsMarkers);
+                db.SaveChanges();
+                foreach(var marker in newOtherManeuverPointsMarkers)
+                {
+                    db.OtherManeuverPoints.Add(new Models.OtherManeuverPoints()
+                    {
+                        Marker_Id = marker.Id,
+                        Maneuver_Id = maneuver.Id
+                    });
+                }
 
                 //обновление значений уровня слонжности и типа манёвра
                 var maneuverDifficultyLevel = db.ManeuverDifficlutyLevels.ToList().Find(mdl => mdl.Maneuver_Id == maneuver.Id && mdl.User_Id == dataOfManeuver.UserId);
@@ -788,6 +941,29 @@ namespace Gafarov_VKR.Controllers
             db.SaveChanges();
         }
 
+        [HttpPost]
+        public void ChangeSignTypePenaltyData(List<Models.MyModels.SignTypeModel> signTypeData)
+        {
+            foreach(var data in signTypeData)
+            {
+                var signPenalty = db.SignTypePenalties.ToList().Find(stp => stp.SignType_Id == data.SignTypeId);
+                signPenalty.Penalty = (float)data.SignTypePenalty;
+            }
+            db.SaveChanges();
+            updatePenalties();
+        }
+        [HttpPost]
+        public void ChangeManeuverTypePenaltyData(List<Models.MyModels.ManeuverTypeModel> maneuverTypeData)
+        {
+            foreach (var data in maneuverTypeData)
+            {
+                var maneuverPenalty = db.ManeuverTypePenalties.ToList().Find(stp => stp.ManeuverType_Id == data.ManeuverTypeId);
+                maneuverPenalty.Penalty = (float)data.ManeuverTypePenalty;
+            }
+            db.SaveChanges();
+            updatePenalties();
+        }
+
         [HttpGet]
         public string GetSignsForAlgorithm()
         {
@@ -836,13 +1012,123 @@ namespace Gafarov_VKR.Controllers
                     });
                 }
             }
-
             return JsonConvert.SerializeObject(objects, Formatting.Indented);
         }
         [HttpGet]
         public string GetManeuversForAlgorithm()
         {
             List<Models.MyModels.AcceptedManeuverModel> objects = new List<Models.MyModels.AcceptedManeuverModel>();
+
+            foreach (var maneuver in db.Maneuvers)
+            {
+                bool isEditableManeuver = true;
+                var foundAccepted = db.AcceptedManeuvers.ToList().Find(t => t.Maneuver_Id == maneuver.Id);
+                isEditableManeuver = foundAccepted != null ? false : true;
+
+                if (!isEditableManeuver)
+                {
+                    var maneuverType = db.ManeuverTypes.ToList().Find(st => st.Id == maneuver.ManeuverType_Id);
+                    var maneuverDiffLevel = db.ManeuverDifficlutyLevels.ToList().Find(mdl => mdl.Maneuver_Id == maneuver.Id);
+                    //подсчёт среднего значения сложности
+                    var maneuverAllDiffLevels = from dl in db.DifficultyLevels
+                                                join mdl in db.ManeuverDifficlutyLevels on dl.Id equals mdl.DifficultyLevel_Id
+                                                join m in db.Maneuvers on mdl.Maneuver_Id equals m.Id
+                                                where m.Id == maneuver.Id
+                                                select dl.Value;
+                    double averageManeuverDifficultyValue = maneuverAllDiffLevels.Sum() / maneuverAllDiffLevels.Count();
+
+                    var startManeuverMarker = db.StartManeuverMarkers.ToList().Find(smm => smm.Maneuver_Id == maneuver.Id);
+                    var endManeuverMarker = db.EndManeuverMarkers.ToList().Find(emm => emm.Maneuver_Id == maneuver.Id);
+                    var otherManeuverPoints = db.OtherManeuverPoints.Where(omp => omp.Maneuver_Id == maneuver.Id);
+                    var startMarker = db.Markers.ToList().Find(mk => mk.Id == startManeuverMarker.Marker_Id);
+                    var endMarker = db.Markers.ToList().Find(mk => mk.Id == endManeuverMarker.Marker_Id);
+                    var otherPoints = new List<Models.MyModels.PointModel>();
+                    foreach (var otherManeuverPoint in otherManeuverPoints)
+                    {
+                        var marker = db.Markers.ToList().Find(mk => mk.Id == otherManeuverPoint.Marker_Id);
+                        otherPoints.Add(new Models.MyModels.PointModel() { Lat = marker.Lat, Lng = marker.Lng });
+                    }
+
+                    //находим создателя
+                    int userId = -1;
+                    if (foundAccepted == null)
+                    {
+                        var foundSuggested = db.SuggestedManeuvers.ToList().Find(t => t.Maneuver_Id == maneuver.Id);
+                        userId = db.Users.ToList().Find(us => us.Id == foundSuggested.User_Id).Id;
+                    }
+                    else
+                    {
+                        userId = db.Users.ToList().Find(us => us.Id == foundAccepted.User_Id).Id;
+                    }
+
+
+                    objects.Add(new Models.MyModels.AcceptedManeuverModel()
+                    {
+                        ManeuverId = maneuver.Id,
+                        StartMarkerPoint = new Models.MyModels.PointModel() { Lat = startMarker.Lat, Lng = startMarker.Lng },
+                        EndMarkerPoint = new Models.MyModels.PointModel() { Lat = endMarker.Lat, Lng = endMarker.Lng },
+                        OtherPoints = otherPoints,
+                        DifficultyLevelValue = -1,
+                        AverageDifficultyLevel = Convert.ToInt32(Math.Floor(averageManeuverDifficultyValue)),
+                        ManeuverTypeName = maneuverType.Name,
+                        CreatorUserId = userId,
+                        RatedUserId = -1,
+                        HasNoRatingYet = false
+                    });
+                }
+            }
+            return JsonConvert.SerializeObject(objects, Formatting.Indented);
+        }
+
+        private List<Models.AlgorithmClass.Sign> getSigns()
+        {
+            List<Models.AlgorithmClass.Sign> objects = new List<Models.AlgorithmClass.Sign>();
+
+            foreach (var sign in db.Signs)
+            {
+                bool isEditableSign = true;
+                var foundAccepted = db.AcceptedSigns.ToList().Find(t => t.Sign_Id == sign.Id);
+                isEditableSign = foundAccepted != null ? false : true;
+                if (!isEditableSign)
+                {
+                    var signType = db.SignTypes.ToList().Find(st => st.Id == sign.SignType_Id);
+                    //подсчёт среднего значения сложности
+                    var signAllDiffLevels = from dl in db.DifficultyLevels
+                                            join sdl in db.SignDifficlutyLevels on dl.Id equals sdl.DifficultyLevel_Id
+                                            join s in db.Signs on sdl.Sign_Id equals s.Id
+                                            where s.Id == sign.Id
+                                            select dl.Value;
+                    double averageSignDifficultyValue = signAllDiffLevels.Sum() / signAllDiffLevels.Count();
+                    var signMarker = db.SignMarkers.ToList().Find(sm => sm.Sign_Id == sign.Id);
+                    var marker = db.Markers.ToList().Find(mk => mk.Id == signMarker.Marker_Id);
+
+                    //находим создателя
+                    int userId = -1;
+                    if (foundAccepted == null)
+                    {
+                        var foundSuggested = db.SuggestedSigns.ToList().Find(t => t.Sign_Id == sign.Id);
+                        userId = db.Users.ToList().Find(us => us.Id == foundSuggested.User_Id).Id;
+                    }
+                    else
+                    {
+                        userId = db.Users.ToList().Find(us => us.Id == foundAccepted.User_Id).Id;
+                    }
+
+                    objects.Add(new Models.AlgorithmClass.Sign()
+                    {
+                        Id = sign.Id,
+                        StartMarkerPoint = new Models.AlgorithmClass.Point() { Lat = marker.Lat, Lng = marker.Lng },
+                        AverageDifficulty = Convert.ToInt32(Math.Floor(averageSignDifficultyValue)),
+                        SignTypeName = signType.Name,
+                    });
+                }
+            }
+
+            return objects;
+        }
+        private List<Models.AlgorithmClass.Maneuver> getManeuvers()
+        {
+            List<Models.AlgorithmClass.Maneuver> objects = new List<Models.AlgorithmClass.Maneuver>();
 
             foreach (var maneuver in db.Maneuvers)
             {
@@ -880,26 +1166,54 @@ namespace Gafarov_VKR.Controllers
                         userId = db.Users.ToList().Find(us => us.Id == foundAccepted.User_Id).Id;
                     }
 
+                    var otherMarkers = (from mark in db.Markers
+                                       join omp in db.OtherManeuverPoints on mark.Id equals omp.Marker_Id
+                                       join man in db.Maneuvers on omp.Maneuver_Id equals man.Id
+                                       where man.Id == maneuver.Id
+                                       select mark).ToList();
 
-                    objects.Add(new Models.MyModels.AcceptedManeuverModel()
+                    Models.AlgorithmClass.Point mediumPoint = null;
+                    if (otherMarkers.Count>0)
                     {
-                        ManeuverId = maneuver.Id,
-                        StartMarkerPoint = new Models.MyModels.PointModel() { Lat = startMarker.Lat, Lng = startMarker.Lng },
-                        EndMarkerPoint = new Models.MyModels.PointModel() { Lat = endMarker.Lat, Lng = endMarker.Lng },
-                        DifficultyLevelValue = -1,
-                        AverageDifficultyLevel = Convert.ToInt32(Math.Floor(averageManeuverDifficultyValue)),
+                        var mediumMarker = otherMarkers[otherMarkers.Count / 2];
+                        mediumPoint = new Models.AlgorithmClass.Point() { Lat = mediumMarker.Lat, Lng = mediumMarker.Lng };
+                    }
+                    
+
+                    objects.Add(new Models.AlgorithmClass.Maneuver()
+                    {
+                        Id = maneuver.Id,
+                        StartMarkerPoint = new Models.AlgorithmClass.Point() { Lat = startMarker.Lat, Lng = startMarker.Lng },
+                        EndMarkerPoint = new Models.AlgorithmClass.Point() { Lat = endMarker.Lat, Lng = endMarker.Lng },
+                        MediumMarkerPoint = mediumPoint,
+                        AverageDifficulty = Convert.ToInt32(Math.Floor(averageManeuverDifficultyValue)),
                         ManeuverTypeName = maneuverType.Name,
-                        CreatorUserId = userId,
-                        RatedUserId = -1,
-                        HasNoRatingYet = false
                     });
                 }
             }
-            return JsonConvert.SerializeObject(objects, Formatting.Indented);
+            return objects;
         }
 
+
+
+
+        private void updatePenalties()
+        {
+            Models.AlgorithmClass.Path.SignPenalties.Clear();
+            Models.AlgorithmClass.Path.ManeuverPenalties.Clear();
+            var signData = getSignTypeAndPenalty();
+            foreach(var sd in signData)
+            {
+                Models.AlgorithmClass.Path.SignPenalties.Add(sd.SignTypeName, sd.SignTypePenalty);
+            }
+            var maneuverData = getManeuverTypeAndPenalty();
+            foreach (var md in maneuverData)
+            {
+                Models.AlgorithmClass.Path.ManeuverPenalties.Add(md.ManeuverTypeName, md.ManeuverTypePenalty);
+            }
+        }
         [HttpPost]
-        public void StartAlgorithm(Models.MyModels.UserDataModel userData)
+        public string StartAlgorithm(Models.MyModels.UserDataModel userData)
         {
             Dictionary<string, int> signProblems = new Dictionary<string, int>();
             foreach(var list in userData.SignProblems)
@@ -911,6 +1225,83 @@ namespace Gafarov_VKR.Controllers
             {
                 maneuverProblems.Add((string)list[0], (int)list[1]);
             }
+            Models.AlgorithmClass.Point startPoint = new Models.AlgorithmClass.Point() 
+            { 
+                Lat = userData.StartPosition.Lat, 
+                Lng = userData.StartPosition.Lng 
+            };
+            List<Models.AlgorithmClass.Sign> signs = getSigns();
+            List<Models.AlgorithmClass.Maneuver> maneuvers = getManeuvers();
+
+            Models.AlgorithmClass.Algorithm algorithm = new Models.AlgorithmClass.Algorithm
+            (
+                signProblems,
+                maneuverProblems,
+                startPoint,
+                signs,
+                maneuvers
+            );
+
+            List<Models.AlgorithmClass.BaseMark> resultingMarks = algorithm.GetResultingMarks();
+
+
+            List<Models.AlgorithmClass.Point> waypoints = new List<Models.AlgorithmClass.Point>();
+            List<int> signIds = new List<int>();
+            List<int> maneuverIds = new List<int>();
+
+            foreach (var mark in resultingMarks)
+            {
+                if (mark is Models.AlgorithmClass.Maneuver)
+                {
+                    maneuverIds.Add(mark.Id);
+                    waypoints.Add((mark as Models.AlgorithmClass.Maneuver).StartMarkerPoint);
+                    if ((mark as Models.AlgorithmClass.Maneuver).MediumMarkerPoint != null)
+                    {
+                        waypoints.Add((mark as Models.AlgorithmClass.Maneuver).MediumMarkerPoint);
+                    }
+                    waypoints.Add((mark as Models.AlgorithmClass.Maneuver).EndMarkerPoint);
+                }
+                else if (mark is Models.AlgorithmClass.Sign)
+                {
+                    signIds.Add(mark.Id);
+                    waypoints.Add(mark.StartMarkerPoint);
+                }
+                else
+                {
+                    waypoints.Add(mark.StartMarkerPoint);
+                }
+            }
+
+            List<Models.MyModels.PointModel> waypointsResult = new List<Models.MyModels.PointModel>();
+            foreach(var point in waypoints)
+            {
+                waypointsResult.Add(new Models.MyModels.PointModel()
+                {
+                    Lat = (float)point.Lat,
+                    Lng = (float)point.Lng
+                });
+            }
+
+            Models.MyModels.AlgorithmResultModel algorithmResult = new Models.MyModels.AlgorithmResultModel()
+            {
+                Waypoints = waypointsResult,
+                ManeuverIds = maneuverIds,
+                SignIds = signIds
+            };
+
+            var str = JsonConvert.SerializeObject(algorithmResult, Formatting.Indented);
+            return str;
+            //Models.AlgorithmClass.Point p1 = new Models.AlgorithmClass.Point()
+            //{
+            //    Lat = 59.99642823392873,
+            //    Lng = 30.300387550886207
+            //};
+            //Models.AlgorithmClass.Point p2 = new Models.AlgorithmClass.Point()
+            //{
+            //    Lat = 59.999282289315715,
+            //    Lng = 30.29941122688932
+            //};
+            //double test = Models.AlgorithmClass.Point.CalculatePseudoManhattanDistance(p1, p2);
         }
 
     }

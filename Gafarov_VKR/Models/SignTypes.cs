@@ -12,6 +12,7 @@ namespace Gafarov_VKR.Models
         public SignTypes()
         {
             Signs = new HashSet<Signs>();
+            SignTypePenalties = new HashSet<SignTypePenalties>();
         }
 
         public int Id { get; set; }
@@ -21,5 +22,8 @@ namespace Gafarov_VKR.Models
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Signs> Signs { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<SignTypePenalties> SignTypePenalties { get; set; }
     }
 }

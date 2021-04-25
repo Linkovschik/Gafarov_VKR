@@ -13,6 +13,8 @@ namespace Gafarov_VKR.Models.MyModels
 
         public PointModel EndMarkerPoint { get; set; }
 
+        public List<PointModel> OtherPoints { get; set; }
+
         public int DifficultyLevelValue { get; set; }
 
         public string ManeuverTypeName { get; set; }

@@ -21,7 +21,7 @@
                 {
                     <label class="form-label">@signType</label>
                     var id = "signProblem_"+counter;
-                    <input type="number" id="@id" class="form-control" onchange="OnSignPropertyEdit(this.id)" onblur="onSignProblemPoleBlur(this.id)" value="1" />
+                    <input type="number" id="@id" class="form-control" onchange="OnSignPropertyEdit(this.id)" onblur="onSignProblemPoleBlur(this.id)" value="0" />
                     counter += 1;
                 }
                 <hr>
@@ -31,7 +31,7 @@
                 {
                     <label class="form-label">@maneuverType</label>
                     var id = "maneuverProblem_" + counter;
-                    <input type="number" id="@id" class="form-control" onchange="OnManeuverPropertyEdit(this.id)" onblur="onManeuverProblemPoleBlur(this.id)" value="1" />
+                    <input type="number" id="@id" class="form-control" onchange="OnManeuverPropertyEdit(this.id)" onblur="onManeuverProblemPoleBlur(this.id)" value="0" />
                     counter += 1;
                 }
                 <hr>
@@ -56,5 +56,9 @@
         </div>
     </div>
 </div>
-
+<style>
+   /* .leaflet-control-container .leaflet-routing-container-hide {
+        display: none;
+    }*/
+</style>
 @Scripts.Render("~/bundles/algorithmScripts")

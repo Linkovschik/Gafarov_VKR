@@ -12,6 +12,7 @@ namespace Gafarov_VKR.Models
         public ManeuverTypes()
         {
             Maneuvers = new HashSet<Maneuvers>();
+            ManeuverTypePenalties = new HashSet<ManeuverTypePenalties>();
         }
 
         public int Id { get; set; }
@@ -21,5 +22,8 @@ namespace Gafarov_VKR.Models
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Maneuvers> Maneuvers { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<ManeuverTypePenalties> ManeuverTypePenalties { get; set; }
     }
 }

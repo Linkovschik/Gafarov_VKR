@@ -19,11 +19,14 @@ namespace Gafarov_VKR.Models
         public virtual DbSet<EndManeuverMarkers> EndManeuverMarkers { get; set; }
         public virtual DbSet<ManeuverDifficlutyLevels> ManeuverDifficlutyLevels { get; set; }
         public virtual DbSet<Maneuvers> Maneuvers { get; set; }
+        public virtual DbSet<ManeuverTypePenalties> ManeuverTypePenalties { get; set; }
         public virtual DbSet<ManeuverTypes> ManeuverTypes { get; set; }
         public virtual DbSet<Markers> Markers { get; set; }
+        public virtual DbSet<OtherManeuverPoints> OtherManeuverPoints { get; set; }
         public virtual DbSet<SignDifficlutyLevels> SignDifficlutyLevels { get; set; }
         public virtual DbSet<SignMarkers> SignMarkers { get; set; }
         public virtual DbSet<Signs> Signs { get; set; }
+        public virtual DbSet<SignTypePenalties> SignTypePenalties { get; set; }
         public virtual DbSet<SignTypes> SignTypes { get; set; }
         public virtual DbSet<StartManeuverMarkers> StartManeuverMarkers { get; set; }
         public virtual DbSet<SuggestedManeuvers> SuggestedManeuvers { get; set; }
@@ -59,6 +62,11 @@ namespace Gafarov_VKR.Models
                 .HasForeignKey(e => e.Maneuver_Id);
 
             modelBuilder.Entity<Maneuvers>()
+                .HasMany(e => e.OtherManeuverPoints)
+                .WithRequired(e => e.Maneuvers)
+                .HasForeignKey(e => e.Maneuver_Id);
+
+            modelBuilder.Entity<Maneuvers>()
                 .HasMany(e => e.StartManeuverMarkers)
                 .WithRequired(e => e.Maneuvers)
                 .HasForeignKey(e => e.Maneuver_Id);
@@ -73,8 +81,18 @@ namespace Gafarov_VKR.Models
                 .WithRequired(e => e.ManeuverTypes)
                 .HasForeignKey(e => e.ManeuverType_Id);
 
+            modelBuilder.Entity<ManeuverTypes>()
+                .HasMany(e => e.ManeuverTypePenalties)
+                .WithRequired(e => e.ManeuverTypes)
+                .HasForeignKey(e => e.ManeuverType_Id);
+
             modelBuilder.Entity<Markers>()
                 .HasMany(e => e.EndManeuverMarkers)
+                .WithRequired(e => e.Markers)
+                .HasForeignKey(e => e.Marker_Id);
+
+            modelBuilder.Entity<Markers>()
+                .HasMany(e => e.OtherManeuverPoints)
                 .WithRequired(e => e.Markers)
                 .HasForeignKey(e => e.Marker_Id);
 
@@ -110,6 +128,11 @@ namespace Gafarov_VKR.Models
 
             modelBuilder.Entity<SignTypes>()
                 .HasMany(e => e.Signs)
+                .WithRequired(e => e.SignTypes)
+                .HasForeignKey(e => e.SignType_Id);
+
+            modelBuilder.Entity<SignTypes>()
+                .HasMany(e => e.SignTypePenalties)
                 .WithRequired(e => e.SignTypes)
                 .HasForeignKey(e => e.SignType_Id);
 

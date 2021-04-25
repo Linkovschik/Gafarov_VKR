@@ -12,6 +12,7 @@ namespace Gafarov_VKR.Models
         public Markers()
         {
             EndManeuverMarkers = new HashSet<EndManeuverMarkers>();
+            OtherManeuverPoints = new HashSet<OtherManeuverPoints>();
             SignMarkers = new HashSet<SignMarkers>();
             StartManeuverMarkers = new HashSet<StartManeuverMarkers>();
         }
@@ -24,6 +25,9 @@ namespace Gafarov_VKR.Models
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<EndManeuverMarkers> EndManeuverMarkers { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<OtherManeuverPoints> OtherManeuverPoints { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SignMarkers> SignMarkers { get; set; }

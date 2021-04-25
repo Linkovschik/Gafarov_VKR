@@ -14,6 +14,7 @@ namespace Gafarov_VKR.Models
             AcceptedManeuvers = new HashSet<AcceptedManeuvers>();
             EndManeuverMarkers = new HashSet<EndManeuverMarkers>();
             ManeuverDifficlutyLevels = new HashSet<ManeuverDifficlutyLevels>();
+            OtherManeuverPoints = new HashSet<OtherManeuverPoints>();
             StartManeuverMarkers = new HashSet<StartManeuverMarkers>();
             SuggestedManeuvers = new HashSet<SuggestedManeuvers>();
         }
@@ -32,6 +33,9 @@ namespace Gafarov_VKR.Models
         public virtual ICollection<ManeuverDifficlutyLevels> ManeuverDifficlutyLevels { get; set; }
 
         public virtual ManeuverTypes ManeuverTypes { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<OtherManeuverPoints> OtherManeuverPoints { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<StartManeuverMarkers> StartManeuverMarkers { get; set; }
