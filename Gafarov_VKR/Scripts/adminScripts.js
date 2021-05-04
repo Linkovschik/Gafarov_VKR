@@ -6,6 +6,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
+if (getCookie("isadmin") == "False" || getCookie("isadmin") == undefined) {
+    alert("Вы не имеете доступа к этой странице")
+    document.location.href="Index"
+}
 
 function resetPropertyEditor(found) {
     $('#propertyEditor').empty();
@@ -299,7 +303,6 @@ class Sign extends UserInput {
 
         this.Marker.off('dragend', OnSignEdit);
         this.Marker.draggable = false;
-        this.Marker.dragging.disable();
     }
     SetSelect() {
         this.Marker.setIcon(this.BlackIcon);
@@ -467,9 +470,7 @@ class Maneuver extends UserInput {
 
 
         this.StartMarker.draggable = false;
-        this.StartMarker.dragging.disable();
         this.EndMarker.draggable = false;
-        this.EndMarker.dragging.disable();
         this.Polyline.disableEdit();
 
     }
@@ -719,7 +720,7 @@ function UpdateMapContent() {
     var displayType = $("#displayTypeSelector :selected").val();
     switch (displayType) {
         case "Предложенные":
-            $("#suggestedInfo").removeClass('hide');
+            $("#suggestedInfo").removeClass('d-none');
             mapStructure.ObjectsOnMap.forEach(obj => {
                 if (obj.Editable && obj.UserId == mapStructure.LastSelectedUserWithSuggestionId) {
                     if (obj instanceof Sign)
@@ -732,7 +733,7 @@ function UpdateMapContent() {
             });
             break;
         case "Одобренные":
-            $("#suggestedInfo").addClass('hide');
+            $("#suggestedInfo").addClass('d-none');
             mapStructure.ObjectsOnMap.forEach(obj => {
                 if (!obj.Editable) {
                     if (obj instanceof Sign)
@@ -745,7 +746,7 @@ function UpdateMapContent() {
             });
             break;
         case "Все":
-            $("#suggestedInfo").removeClass('hide');
+            $("#suggestedInfo").removeClass('d-none');
             mapStructure.ObjectsOnMap.forEach(obj => {
                 if (obj.Editable && obj.UserId == mapStructure.LastSelectedUserWithSuggestionId || !obj.Editable) {
                     if (obj instanceof Sign)
@@ -774,7 +775,7 @@ function selectingObjectsToDelete() {
     $('#maneuverButton').attr('disabled', 'disabled');
     $('#saveChangesButton').attr('disabled', 'disabled');
     $("#cancelBuildButton").attr('onclick', "cancelDelete()");
-    $("#cancelBuildButton").removeClass('hide');
+    $("#cancelBuildButton").removeClass('d-none');
     $("#cancelBuildButton").html("Отменить удаление");
 
     mapStructure.MapState = MapStatesEnum.Deleting;
@@ -786,7 +787,7 @@ function cancelDelete() {
     $('#signButton').removeAttr('disabled');
     $('#maneuverButton').removeAttr('disabled');
     $('#saveChangesButton').removeAttr('disabled');
-    $("#cancelBuildButton").addClass('hide');
+    $("#cancelBuildButton").addClass('d-none');
 
     mapStructure.MapState = MapStatesEnum.Nothing;
     if (mapStructure.ObjectsToRemove.length >= 0) {
@@ -841,6 +842,10 @@ function acceptChanges() {
     sendObjectsToApprove();
     sendObjectsToDisapprove();
     sendObjectsToRemove();
+}
+
+function acceptPenalties() {
+    console.log("Применить изменения штрафов");
     sendUserDataToChange();
 }
 

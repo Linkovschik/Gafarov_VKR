@@ -12,29 +12,105 @@ namespace Gafarov_VKR.Controllers
     public class HomeController : Controller
     {
         Models.DatabaseContext db = new Models.DatabaseContext();
+        public void Quit()
+        {
+            if (Request.Cookies["id"] != null)
+            {
+                Response.Cookies["id"].Expires = DateTime.Now.AddDays(-1);
+            }
+            if (Request.Cookies["isadmin"] != null)
+            {
+                Response.Cookies["isadmin"].Expires = DateTime.Now.AddDays(-1);
+            }
+        }
         public ActionResult Index()
         {
+            ViewBag.SignTypes = getSignTypes();
+            ViewBag.ManeuverTypes = getManeuverTypes();
             return View();
         }
-        public ActionResult About()
+        public ActionResult Admin()
         {
             ViewBag.Message = "Your application description page.";
             ViewBag.SignTypeData = getSignTypeAndPenalty();
             ViewBag.ManeuverTypeData = getManeuverTypeAndPenalty();
             return View();
         }
-        public ActionResult Contact()
+        public ActionResult Rating()
         {
             ViewBag.Message = "Your contact page.";
 
             return View();
         }
-        public ActionResult Algorithm()
+        public ActionResult Cabinet()
         {
-            ViewBag.SignTypes = getSignTypes();
-            ViewBag.ManeuverTypes = getManeuverTypes();
             return View();
         }
+        public ActionResult Registration()
+        {
+            return View();
+        }
+        public ActionResult Authorization()
+        {
+            return View();
+        }
+
+        public int RegisterUser(Models.MyModels.UserModel user)
+        {
+            var foundUser = db.Users.ToList().Find(u => u.Login == user.Login);
+            if (foundUser==null)
+            {
+                var newUser = new Models.Users()
+                {
+                    Login = user.Login,
+                    Password = user.Password
+                };
+                db.Users.Add(newUser);
+                db.SaveChanges();
+                Authorize(new Models.MyModels.DataAboutUser()
+                {
+                    Id = newUser.Id,
+                    IsAdmin = false
+                });
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
+            
+        }
+
+        public string AuthorizeUser(Models.MyModels.UserModel user)
+        {
+           
+            bool isAdmin = false;
+            Models.MyModels.DataAboutUser dataAboutUser = new Models.MyModels.DataAboutUser()
+            {
+                Id = -1,
+                IsAdmin = isAdmin
+            };
+
+            var foundUser = db.Users.ToList().Find(u => u.Login == user.Login && u.Password == user.Password);
+            if (foundUser!=null)
+            {
+                var foundAdmin = db.Admin.ToList().Find(a => a.User_Id == foundUser.Id);
+                if (foundAdmin != null)
+                    isAdmin = true;
+                dataAboutUser.Id = foundUser.Id;
+                dataAboutUser.IsAdmin = isAdmin;
+                Authorize(dataAboutUser);
+            }
+
+            return JsonConvert.SerializeObject(dataAboutUser, Formatting.Indented);
+        }
+
+        private void Authorize(Models.MyModels.DataAboutUser dataAboutUser)
+        {
+            Response.Cookies.Add(new HttpCookie("id", dataAboutUser.Id.ToString()));
+            Response.Cookies.Add(new HttpCookie("isadmin", dataAboutUser.IsAdmin.ToString()));
+        }
+
         [HttpGet]
         public string GetSignTypesForAlgorithm()
         {
@@ -57,7 +133,19 @@ namespace Gafarov_VKR.Controllers
             return JsonConvert.SerializeObject(getManeuverTypeAndPenalty(), Formatting.Indented);
         }
 
- 
+        public string GetOccupiedLogins()
+        {
+            List<string> occupiedLogins = new List<string>();
+
+            foreach(var user in db.Users)
+            {
+                occupiedLogins.Add(user.Login);
+            }
+
+            return JsonConvert.SerializeObject(occupiedLogins, Formatting.Indented);
+        }
+
+
         [HttpPost]
         public PartialViewResult GetSignUserEditForm(Models.MyModels.AcceptedSignModel selectedSign)
         {

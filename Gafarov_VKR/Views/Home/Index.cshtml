@@ -1,42 +1,59 @@
 ﻿@{
-    ViewBag.Title = "Кабинет пользователя";
+    ViewBag.Title = "Главная страница";
 }
-<div class="jumbotron">
-    <h1>Кабинет пользователя</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
 
+<h2 class="mb-3">Подборка оптимального маршрута</h2>
+   
 <div class="row">
-    <div class="col-md-10">
-        <div id="mapid" style="height: 480px"></div>
+    <div class="col-md-8">
+        <div id="mapid" style="height: 640px"></div>
     </div>
-    <div class="col-md-2">
-        <h2>Get more libraries</h2>
-        <button type="button" id="signButton" class="btn btn-primary" onclick="startSign()">Указать знак</button>
-        <button type="button" id="maneuverButton" class="btn btn-primary" onclick="startManeuver()">Указать манёвр</button>
-        <button type="button" id="cancelBuildButton" class="btn btn-primary hide" onclick="cancelSign()">Отменить установку знака</button>
-        <button type="button" id="deleteSelectedButton" class="btn btn-primary " onclick="selectingObjectsToDelete()">Выделить для удаления</button>
-        <button type="button" id="saveChangesButton" class="btn btn-primary " onclick="acceptChanges()">Сохранить изменения</button>
+    <div class="col-md-4">
+        <h4 class="mb-3">Заполните вашу успеваемость</h4>
 
-    </div>
-    <div class="col-md-12">
-        <div id="propertyEditor">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="form-label">Знаки</h5>
+                @{
+                    var signCounter = 0;
+                    foreach (var signType in ViewBag.SignTypes)
+                    {
+                        <label class="form-label">@signType</label>
+                        var id = "signProblem_" + signCounter;
+                        <input type="number" id="@id" class="form-control mb-2" onchange="OnSignPropertyEdit(this.id)" onblur="onSignProblemPoleBlur(this.id)" value="0" />
+                        signCounter += 1;
+                    }
+                }
+            </div>
+            <div class="col-md-6">
+                <h5 class="form-label">Манёвры</h5>
+                @{
+                    var maneuverCounter = 0;
+                    foreach (var maneuverType in ViewBag.ManeuverTypes)
+                    {
+                        <label class="form-label">@maneuverType</label>
+                        var id = "maneuverProblem_" + maneuverCounter;
+                        <input type="number" id="@id" class="form-control mb-2" onchange="OnManeuverPropertyEdit(this.id)" onblur="onManeuverProblemPoleBlur(this.id)" value="0" />
+                        maneuverCounter += 1;
+                    }
+                }
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div id="propertyEditor">
 
+            </div>
         </div>
     </div>
-    <div class="col-md-12">
-        <div id="displayType">
-            <form id="displayTypeChoose">
-                <select id="displayTypeSelector" class="form-select" aria-label="Default select example" onchange="UpdateMapContent()">
-                    <option selected value="Все">Все маркеры</option>
-                    <option value="Предложенные">Предложенные мной маркеры</option>
-                    <option value="Одобренные">Одобренные администрацией маркеры</option>
-                </select>
-            </form>
-        </div>
+    <div class="col-md-8 btn-group" role="group">
+        <button type="button" id="startPositionButton" class="btn btn-primary" onclick="setStartPosition()">Указать моё месторасположение</button>
+        <button type="button" id="cancelBuildButton" class="btn btn-primary d-none" onclick="cancelPosition()">Отменить указание месторасположения</button>
+        <button type="button" id="algorithmButton" class="btn btn-primary " onclick="startAlgorithm()" disabled>Построить мой маршрут</button>
     </div>
 </div>
-
-@Scripts.Render("~/bundles/arthurScripts")
-
+<style>
+        /* .leaflet-control-container .leaflet-routing-container-hide {
+        display: none;
+    }*/
+</style>
+@Scripts.Render("~/bundles/algorithmScripts")

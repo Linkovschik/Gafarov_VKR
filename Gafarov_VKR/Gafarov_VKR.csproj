@@ -157,6 +157,7 @@
     <Compile Include="Models\MyModels\AcceptedManeuverModel.cs" />
     <Compile Include="Models\MyModels\AcceptedSignModel.cs" />
     <Compile Include="Models\MyModels\AlgorithmResultModel.cs" />
+    <Compile Include="Models\MyModels\DataAboutUser.cs" />
     <Compile Include="Models\MyModels\ManeuverModel.cs" />
     <Compile Include="Models\MyModels\ManeuverTypeModel.cs" />
     <Compile Include="Models\MyModels\PointModel.cs" />
@@ -193,6 +194,7 @@
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\adminScripts.js" />
     <Content Include="Scripts\algorithmScripts.js" />
+    <Content Include="Scripts\authorizationScripts.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
@@ -215,6 +217,7 @@
     <Content Include="Scripts\lrm-graphhopper-1.2.0.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\myScripts.js" />
+    <Content Include="Scripts\registrationScripts.js" />
     <Content Include="Scripts\userRatingScripts.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -227,19 +230,21 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
+    <Content Include="Views\Home\Admin.cshtml" />
+    <Content Include="Views\Home\Rating.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Home\GetSignEditForm.cshtml" />
     <Content Include="Views\Home\GetManeuverEditForm.cshtml" />
     <Content Include="Views\Home\GetSignApproveForm.cshtml" />
     <Content Include="Views\Home\GetManeuverApproveForm.cshtml" />
-    <Content Include="Views\Home\Algorithm.cshtml" />
+    <Content Include="Views\Home\Cabinet.cshtml" />
     <Content Include="Views\Home\GetSignUserEditForm.cshtml" />
     <Content Include="Views\Home\GetManeuverUserEditForm.cshtml" />
     <Content Include="Views\Home\GetSignShowForm.cshtml" />
     <Content Include="Views\Home\GetManeuverShowtForm.cshtml" />
     <Content Include="Views\Home\GetSmthSuggestedUsers.cshtml" />
+    <Content Include="Views\Home\Registration.cshtml" />
+    <Content Include="Views\Home\Authorization.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />

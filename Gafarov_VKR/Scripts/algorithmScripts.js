@@ -568,11 +568,11 @@ function setStartPosition() {
         ToggleSelected(mapStructure.SelectedObject)
     }
     mapStructure.MapState = MapStatesEnum.SetStart;
-    $("#cancelBuildButton").removeClass('hide');
+    $("#cancelBuildButton").removeClass('d-none');
 }
 function cancelPosition() {
     mapStructure.MapState = MapStatesEnum.Nothing;
-    $("#cancelBuildButton").addClass('hide');
+    $("#cancelBuildButton").addClass('d-none');
 }
 function readyForAlgorithm() {
     mapStructure.FiguresOnMap.clearLayers();

@@ -1,0 +1,60 @@
+﻿@{
+    ViewBag.Title = "Авторизация";
+}
+<div>
+    <h2 class="mb-2 text-center">Авторизация</h2>
+    <main class="form-signin">
+        <form method="post" action="/Home/AuthorizeUser" data-ajax="true" id="authorizationForm">
+            <div class="form-floating mb-3">
+                <input type="text" name="Login" class="form-control" id="login" placeholder="Login">
+                <label for="floatingInput">Введите логин</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="password" name="Password" class="form-control" id="pass" placeholder="Password">
+                <label for="floatingPassword">Введите пароль</label>
+                <div id="validationServer03Feedback" class="invalid-feedback">
+                    Логин или пароль неверны
+                </div>
+            </div>
+            <button class="w-100 btn btn-lg btn-primary" type="submit" value="Отправить">Отправить</button>
+        </form>
+    </main>
+</div>
+
+@Scripts.Render("~/bundles/authorizationScripts")
+
+<style>
+    .form-signin {
+        width: 100%;
+        max-width: 300px;
+        padding: 15px;
+        margin: auto;
+    }
+
+    .form-floating > .form-control, .form-floating > .form-select {
+        height: calc(3.5rem + 2px);
+        padding: 1rem .75rem;
+    }
+
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+
+    main {
+        display: block;
+    }
+</style>

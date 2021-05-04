@@ -6,7 +6,12 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
-var USERID = 3;
+if (getCookie("id") == undefined) {
+    alert("Вы не имеете доступа к этой странице")
+    document.location.href = "Index"
+}
+
+var USERID = Number.parseInt(getCookie("id"));
 
 function resetPropertyEditor(found) {
     $('#propertyEditor').empty();
@@ -511,7 +516,7 @@ function startSign() {
     $('#saveChangesButton').attr('disabled', 'disabled');
 
     $("#cancelBuildButton").attr('onclick', "cancelSign()");
-    $("#cancelBuildButton").removeClass('hide');
+    $("#cancelBuildButton").removeClass('d-none');
     $("#cancelBuildButton").html("Отенить установку знака");
 }
 function enableFinishSign() {
@@ -534,7 +539,7 @@ function cancelSign() {
     $('#maneuverButton').removeAttr('disabled');
     $('#deleteSelectedButton').removeAttr('disabled');
     $('#saveChangesButton').removeAttr('disabled');
-    $("#cancelBuildButton").addClass('hide');
+    $("#cancelBuildButton").addClass('d-none');
 }
 function finishSign() {
 
@@ -551,7 +556,7 @@ function finishSign() {
     $('#maneuverButton').removeAttr('disabled');
     $('#deleteSelectedButton').removeAttr('disabled');
     $('#saveChangesButton').removeAttr('disabled');
-    $("#cancelBuildButton").addClass('hide');
+    $("#cancelBuildButton").addClass('d-none');
 }
 
 function startManeuver() {
@@ -567,7 +572,7 @@ function startManeuver() {
 
     $("#cancelBuildButton").attr('onclick', "cancelManeuver()");
     $("#cancelBuildButton").html("Отенить установку манёвра");
-    $("#cancelBuildButton").removeClass('hide');
+    $("#cancelBuildButton").removeClass('d-none');
 
 
 }
@@ -590,7 +595,7 @@ function cancelManeuver() {
     $('#signButton').removeAttr('disabled');
     $('#deleteSelectedButton').removeAttr('disabled');
     $('#saveChangesButton').removeAttr('disabled');
-    $("#cancelBuildButton").addClass('hide');
+    $("#cancelBuildButton").addClass('d-none');
 }
 function finishManeuver() {
     coords = [];
@@ -612,7 +617,7 @@ function finishManeuver() {
     $('#signButton').removeAttr('disabled');
     $('#deleteSelectedButton').removeAttr('disabled');
     $('#saveChangesButton').removeAttr('disabled');
-    $("#cancelBuildButton").addClass('hide');
+    $("#cancelBuildButton").addClass('d-none');
 }
 
 function LoadSignsFromDB() {
@@ -721,7 +726,7 @@ function selectingObjectsToDelete() {
     $('#maneuverButton').attr('disabled', 'disabled');
     $('#saveChangesButton').attr('disabled', 'disabled');
     $("#cancelBuildButton").attr('onclick', "cancelDelete()");
-    $("#cancelBuildButton").removeClass('hide');
+    $("#cancelBuildButton").removeClass('d-none');
     $("#cancelBuildButton").html("Отменить удаление");
 
     mapStructure.MapState = MapStatesEnum.Deleting;
@@ -733,7 +738,7 @@ function cancelDelete() {
     $('#signButton').removeAttr('disabled');
     $('#maneuverButton').removeAttr('disabled');
     $('#saveChangesButton').removeAttr('disabled');
-    $("#cancelBuildButton").addClass('hide');
+    $("#cancelBuildButton").addClass('d-none');
 
     mapStructure.MapState = MapStatesEnum.Nothing;
     if (mapStructure.ObjectsToRemove.length >= 0) {

@@ -6,11 +6,17 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
-var USERID = 3;
+if (getCookie("id") == undefined) {
+    alert("Вы не имеете доступа к этой странице")
+    document.location.href = "Index"
+}
+
+var USERID = Number.parseInt(getCookie("id"));
 
 function onCreateRating() {
     mapStructure.SelectedObject.HasNoRatingYet = false;
     updatePropertyEditor(mapStructure.SelectedObject);
+    onDifficultyLevelInput();
 }
 
 function resetPropertyEditor(found) {

@@ -34,6 +34,12 @@ namespace Gafarov_VKR
             bundles.Add(new ScriptBundle("~/bundles/algorithmScripts").Include(
                     "~/Scripts/algorithmScripts.js"));
 
+            bundles.Add(new ScriptBundle("~/bundles/registrationScripts").Include(
+                    "~/Scripts/registrationScripts.js"));
+
+            bundles.Add(new ScriptBundle("~/bundles/authorizationScripts").Include(
+                    "~/Scripts/authorizationScripts.js"));
+
             bundles.Add(new ScriptBundle("~/bundles/leaflet").Include(
                      "~/Scripts/lrm-graphhopper-1.2.0.min.js",
                      "~/Scripts/L.Path.Transform.js",

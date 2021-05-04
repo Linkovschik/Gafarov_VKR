@@ -1,0 +1,66 @@
+﻿@{
+    ViewBag.Title = "Регистрация";
+}
+
+<div>
+    <h2 class="mb-2 text-center">Регистрация пользователя</h2>
+    <main class="form-signin">
+        <form  method="post" action="/Home/RegisterUser" data-ajax="true" id="registrationForm">
+            <div class="form-floating mb-3">
+                <input type="text" name="Login" class="form-control" id="login" placeholder="Login">
+                <label for="floatingInput">Введите логин</label>
+                <div id="validationServer03Feedback" class="invalid-feedback">
+                    Логин уже занят
+                </div>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="password" name="Password" class="form-control" id="pass1" placeholder="Password">
+                <label for="floatingPassword">Введите пароль</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="pass2" placeholder="Password">
+                <label for="floatingPassword">Подтвердите пароль</label>
+                <div id="validationServer03Feedback" class="invalid-feedback">
+                    Пароли должны совпадать
+                </div>
+            </div>
+             <button class="w-100 btn btn-lg btn-primary" type="submit" value="Отправить">Зарегистрироваться</button>
+        </form>
+     </main>
+</div>
+@Scripts.Render("~/bundles/registrationScripts")
+
+<style>
+    .form-signin {
+        width: 100%;
+        max-width: 300px;
+        padding: 15px;
+        margin: auto;
+    }
+
+    .form-floating > .form-control, .form-floating > .form-select {
+        height: calc(3.5rem + 2px);
+        padding: 1rem .75rem;
+    }
+
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: .25rem;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+    main {
+        display: block;
+    }
+</style>

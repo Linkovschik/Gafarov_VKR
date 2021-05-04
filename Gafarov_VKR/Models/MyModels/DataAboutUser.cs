@@ -5,10 +5,10 @@ using System.Web;
 
 namespace Gafarov_VKR.Models.MyModels
 {
-    public class UserModel
+    public class DataAboutUser
     {
-        public string Login { get; set; }
+        public int Id { get; set; }
 
-        public string Password { get; set; }
+        public bool IsAdmin { get; set; }
     }
 }

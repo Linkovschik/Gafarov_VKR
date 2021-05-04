@@ -1,12 +1,14 @@
-﻿<form id="infoForm">
-    <div class="form-outline">
+﻿<hr>
+<h4>Обработка элемента</h4>
+<form id="infoForm">
+    <div class="form-outline mb-2">
         <label class="form-label">Средний уровень сложности</label>
         <input type="number" id="difficultyLevel" class="form-control" min="1" max="10" value="@ViewBag.SelectedObject.DifficultyLevelValue.ToString()" readonly="readonly" />
     </div>
     @{
         if (ViewBag.SelectedObject.Editable == false)
         {
-            <div class="form-outline">
+            <div class="form-outline mb-2">
                 <label class="form-label">Тип элемента</label>
                 <select class="form-select" id="elementType" onchange="OnSignPropertyEdit()">
                     @{
@@ -28,7 +30,7 @@
         }
         else
         {
-            <div class="form-outline">
+            <div class="form-outline mb-2">
                 <label class="form-label">Тип элемента</label>
                 <input type="text" id="elementType" class="form-control" value="@ViewBag.SelectedObject.SignTypeName" readonly="readonly" />
             </div>
