@@ -21,6 +21,8 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             BaseMark startMarker, 
             Dictionary<string, int>  signProblems, 
             Dictionary<string, int> maneuverProblems,
+            Dictionary<string, double> signPenalties,
+            Dictionary<string, double> maneuverPenalties,
             double speed, 
             double time)
         {
@@ -40,7 +42,7 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             List<Path> result = new List<Path>();
             for(int i=0; i< pathCount; ++i)
             {
-                Path path = new Path(_allMarks, startMarker, signProblems, maneuverProblems, speed);
+                Path path = new Path(allMarks, startMarker, signProblems, maneuverProblems, signPenalties, maneuverPenalties, speed);
                 int index = 0;
                 while (true)
                 {
@@ -77,6 +79,8 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             path.StartMarker = pathToCopy.StartMarker;
             path.SignProblems = pathToCopy.SignProblems;
             path.ManeuverProblems = pathToCopy.ManeuverProblems;
+            path.SignPenalties = pathToCopy.SignPenalties;
+            path.ManeuverPenalties = pathToCopy.ManeuverPenalties;
             path.Speed = pathToCopy.Speed;
             path.Time = pathToCopy.Time;
             path.Cost = pathToCopy.Cost;
@@ -86,22 +90,11 @@ namespace Gafarov_VKR.Models.AlgorithmClass
         }
 
         //штрафы за знаки, тип:минуты
-        public static Dictionary<string, double> SignPenalties
-            = new Dictionary<string, double>
-            {
-                { "Знак СТОП", 1},
-                { "Пешеходный переход", 1 },
-                { "Ограничение скорости", 0 }
-            };
+        private Dictionary<string, double> SignPenalties { get; set; }
 
         //штрафы за знаки, тип:минуты
-        public static Dictionary<string, double> ManeuverPenalties
-            = new Dictionary<string, double>
-            {
-                { "Разворот", 4},
-                { "Поворот налево", 3 },
-                { "Поворот направо", 2 }
-            };
+        private Dictionary<string, double> ManeuverPenalties { get; set; }
+
         private Dictionary<int,int> SignCountsById { get; set; }
         private Dictionary<int, int> ManeuverCountsById { get; set; }
         public List<BaseMark> InputMarkList { get; set; }
@@ -128,13 +121,22 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             SignCountsById = new Dictionary<int, int>();
             ManeuverCountsById = new Dictionary<int, int>();
         }
-        private Path(List<BaseMark> allMarks, BaseMark startMarker, Dictionary<string, int> signProblems, Dictionary<string, int> maneuverProblems, double speed)
+        private Path(
+            List<BaseMark> allMarks,
+            BaseMark startMarker,
+            Dictionary<string, int> signProblems,
+            Dictionary<string, int> maneuverProblems,
+            Dictionary<string, double> signPenalties,
+            Dictionary<string, double> maneuverPenalties,
+            double speed)
         {
             
             AllKnownMarks = allMarks;
             StartMarker = startMarker;
             SignProblems = signProblems;
             ManeuverProblems = maneuverProblems;
+            SignPenalties = signPenalties;
+            ManeuverPenalties = maneuverPenalties;
 
             InputMarkList = new List<BaseMark>();
             InputMarkList.Add(StartMarker);
@@ -210,7 +212,7 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                     }
                     //расчёт штрафа
                     double penalty = 0;
-                    penalty += Path.SignPenalties[sign.SignTypeName] * Speed;
+                    penalty += SignPenalties[sign.SignTypeName] * Speed;
                     distance += penalty;
                     if (Double.IsNaN(distance))
                     {
@@ -219,7 +221,7 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                     //расчёт штрафа за смену направления
                     double directionPenalty = 0;
                     Vector v1 = new Vector(currentPoint, sign.StartMarkerPoint);
-                    directionPenalty+= (1 - Vector.GetCOS(v1, previousVector) - 1) * Path.ManeuverPenalties["Разворот"] * Speed;
+                    directionPenalty+= (1 - Vector.GetCOS(v1, previousVector) - 1) * ManeuverPenalties["Разворот"] * Speed;
                     distance += directionPenalty;
                     if (Double.IsNaN(distance))
                     {
@@ -256,12 +258,12 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                             penaltyCount +=1;
                         }
                     }
-                    penalty += penaltyCount * Path.ManeuverPenalties[maneuver.ManeuverTypeName] * Speed;
+                    penalty += penaltyCount * ManeuverPenalties[maneuver.ManeuverTypeName] * Speed;
                     distance += penalty;
 
                     //расчёт штрафа за смену направления
                     double directionPenalty = 0;
-                    directionPenalty += (1 - Vector.GetCOS(v1, previousVector) - 1) * Path.ManeuverPenalties["Разворот"] * Speed;
+                    directionPenalty += (1 - Vector.GetCOS(v1, previousVector) - 1) * ManeuverPenalties["Разворот"] * Speed;
                     distance += directionPenalty;
 
                     nextPoint = (mark as Maneuver).EndMarkerPoint;
@@ -314,6 +316,11 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             {
                 InputMarkList.RemoveRange(startIndex, InputMarkList.Count - 1 - startIndex);
             }
+            if(InputMarkList[0].StartMarkerPoint.Lat != InputMarkList[InputMarkList.Count-1].StartMarkerPoint.Lat &&
+                InputMarkList[0].StartMarkerPoint.Lng != InputMarkList[InputMarkList.Count - 1].StartMarkerPoint.Lng)
+            {
+                throw new Exception("Мутация удаления отработала с ошибкой!");
+            }
         }
 
         private void addingMutation(int averageMutationLength, Random random)
@@ -335,8 +342,15 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 addProbability = random.NextDouble();
                 if (addProbability > 0.0 && addProbability < 0.7)
                 {
+                    InputMarkList.RemoveAt(InputMarkList.Count - 1);
                     InputMarkList.Add(AllKnownMarks[i]);
+                    InputMarkList.Add(StartMarker);
                 }
+            }
+            if (InputMarkList[0].StartMarkerPoint.Lat != InputMarkList[InputMarkList.Count - 1].StartMarkerPoint.Lat &&
+               InputMarkList[0].StartMarkerPoint.Lng != InputMarkList[InputMarkList.Count - 1].StartMarkerPoint.Lng)
+            {
+                throw new Exception("Мутация добавления отработала с ошибкой!");
             }
         }
 
@@ -359,6 +373,11 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 var plate = InputMarkList[chosenIndex];
                 InputMarkList[chosenIndex] = InputMarkList[onChangeIndex];
                 InputMarkList[onChangeIndex] = plate;
+            }
+            if (InputMarkList[0].StartMarkerPoint.Lat != InputMarkList[InputMarkList.Count - 1].StartMarkerPoint.Lat &&
+               InputMarkList[0].StartMarkerPoint.Lng != InputMarkList[InputMarkList.Count - 1].StartMarkerPoint.Lng)
+            {
+                throw new Exception("Мутация изменения отработала с ошибкой!");
             }
         }
 

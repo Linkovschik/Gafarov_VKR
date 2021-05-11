@@ -7,6 +7,10 @@ namespace Gafarov_VKR.Models.AlgorithmClass
 {
     public class Algorithm
     {
+        public Dictionary<string, double> SignPenalties { get; set; }
+        public Dictionary<string, double> ManeuverPenalties { get; set; }
+
+
         private Dictionary<string, int> SignProblems { get; set; }
         private Dictionary<string, int> ManeuverProblems { get; set; }
         private Point StartPoint { get; set; }
@@ -27,14 +31,28 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             int time,
             int speed)
         {
-            //средняя скорость = 500 метров/минуту по умолчанию
+            //средняя скорость = 500 м/мин (30 км/ч) по умолчанию 
             AverageSpeed = speed * 1000.0 / 60.0;
+            //время в минутах
             Time = time;
             SignProblems = signProblems;
             ManeuverProblems = maneuverProblems;
             StartPoint = startPoint;
             Signs = signs;
             Maneuvers = maneuvers;
+
+            SignPenalties = new Dictionary<string, double>()
+            {
+                {"Пешеходный переход", 2 },
+                {"Знак СТОП", 1 },
+                {"Ограничение скорости", 0 }
+            };
+            ManeuverPenalties = new Dictionary<string, double>()
+            {
+                {"Разворот", 4 },
+                {"Поворот налево", 2 },
+                {"Поворот направо", 1 }
+            };
         }
 
         public List<BaseMark> GetResultingMarks()
@@ -56,7 +74,7 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 StartMarkerPoint = StartPoint
             };
 
-            List<Path> pathList = Path.GeneratePaths(random, PATHCOUNT, allMarks, startMarker, SignProblems, ManeuverProblems, AverageSpeed, Time);
+            List<Path> pathList = Path.GeneratePaths(random, PATHCOUNT, allMarks, startMarker, SignProblems, ManeuverProblems, SignPenalties, ManeuverPenalties, AverageSpeed, Time);
 
             for (int iter = 0; iter < ITERATIONCOUNT; ++iter)
             {

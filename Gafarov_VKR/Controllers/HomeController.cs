@@ -1050,7 +1050,6 @@ namespace Gafarov_VKR.Controllers
                 signPenalty.Penalty = (float)data.SignTypePenalty;
             }
             db.SaveChanges();
-            updatePenalties();
         }
         [HttpPost]
         public void ChangeManeuverTypePenaltyData(List<Models.MyModels.ManeuverTypeModel> maneuverTypeData)
@@ -1061,7 +1060,6 @@ namespace Gafarov_VKR.Controllers
                 maneuverPenalty.Penalty = (float)data.ManeuverTypePenalty;
             }
             db.SaveChanges();
-            updatePenalties();
         }
 
         [HttpGet]
@@ -1297,19 +1295,19 @@ namespace Gafarov_VKR.Controllers
 
 
 
-        private void updatePenalties()
+        private void updatePenalties(Models.AlgorithmClass.Algorithm algorithm)
         {
-            Models.AlgorithmClass.Path.SignPenalties.Clear();
-            Models.AlgorithmClass.Path.ManeuverPenalties.Clear();
+            algorithm.SignPenalties.Clear();
+            algorithm.ManeuverPenalties.Clear();
             var signData = getSignTypeAndPenalty();
             foreach(var sd in signData)
             {
-                Models.AlgorithmClass.Path.SignPenalties.Add(sd.SignTypeName, sd.SignTypePenalty);
+                algorithm.SignPenalties.Add(sd.SignTypeName, sd.SignTypePenalty);
             }
             var maneuverData = getManeuverTypeAndPenalty();
             foreach (var md in maneuverData)
             {
-                Models.AlgorithmClass.Path.ManeuverPenalties.Add(md.ManeuverTypeName, md.ManeuverTypePenalty);
+                algorithm.ManeuverPenalties.Add(md.ManeuverTypeName, md.ManeuverTypePenalty);
             }
         }
         [HttpPost]
@@ -1343,6 +1341,7 @@ namespace Gafarov_VKR.Controllers
                 userData.Time,
                 userData.Speed
             );
+            updatePenalties(algorithm);
 
             List<Models.AlgorithmClass.BaseMark> resultingMarks = algorithm.GetResultingMarks();
 
