@@ -23,11 +23,13 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             Dictionary<string, int> maneuverProblems,
             Point startPoint,
             List<Sign> signs,
-            List<Maneuver> maneuvers)
+            List<Maneuver> maneuvers,
+            int time,
+            int speed)
         {
             //средняя скорость = 500 метров/минуту по умолчанию
-            AverageSpeed = 500;
-            Time = 90;
+            AverageSpeed = speed * 1000.0 / 60.0;
+            Time = time;
             SignProblems = signProblems;
             ManeuverProblems = maneuverProblems;
             StartPoint = startPoint;

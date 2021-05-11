@@ -2,15 +2,20 @@
     ViewBag.Title = "Главная страница";
 }
 
-<h2 class="mb-3">Подборка оптимального маршрута</h2>
+<h2 class="mb-3">Подборка рационального маршрута</h2>
    
 <div class="row">
     <div class="col-md-8">
         <div id="mapid" style="height: 640px"></div>
     </div>
     <div class="col-md-4">
-        <h4 class="mb-3">Заполните вашу успеваемость</h4>
+        <h4 class="mb-3">Укажите время маршрута (в минутах)</h4>
+        <input type="number" id="timeInput" class="form-control mb-2" onchange="OnTimeEdit()" onblur="onTimePoleBlur()" value="90" />
 
+        <h4 class="mb-3">Укажите среднюю скорость (в км/ч)</h4>
+        <input type="number" id="speedInput" class="form-control mb-2" onchange="OnSpeedEdit()" onblur="onSpeedPoleBlur()" value="30" />
+
+        <h4 class="mb-3">Заполните вашу успеваемость</h4>
         <div class="row">
             <div class="col-md-6">
                 <h5 class="form-label">Знаки</h5>

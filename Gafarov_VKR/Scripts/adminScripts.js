@@ -300,17 +300,20 @@ class Sign extends UserInput {
     ResetSelect() {
         this.Marker.setIcon(this.BlueIcon);
         this.Selected = false;
-
-        this.Marker.off('dragend', OnSignEdit);
-        this.Marker.draggable = false;
+        if (!this.Editable) {
+            this.Marker.off('dragend', OnSignEdit);
+            this.Marker.draggable = false;
+        }
     }
     SetSelect() {
         this.Marker.setIcon(this.BlackIcon);
         this.Selected = true;
-
-        this.Marker.on('dragend', OnSignEdit);
-        this.Marker.draggable = true;
-        this.Marker.dragging.enable();
+        if (!this.Editable) {
+            this.Marker.on('dragend', OnSignEdit);
+            this.Marker.draggable = true;
+            this.Marker.dragging.enable();
+        }
+       
     }
 
     getObjectSendForm() {
@@ -458,40 +461,44 @@ class Maneuver extends UserInput {
     ResetSelect() {
         this.StartMarker.setIcon(this.GreenIcon);
         this.EndMarker.setIcon(this.RedIcon);
-        this.Polyline.deleteArrowheads();
         mapStructure.FiguresOnMap.removeLayer(this.Polyline);
         this.Selected = false;
+        if (!this.Editable) {
+            this.Polyline.deleteArrowheads();
+            this.StartMarker.off('dragend', OnManeuverEdit);
+            this.EndMarker.off('dragend', OnManeuverEdit);
+            this.Polyline.off('editable:vertex:dragend', OnManeuverPolylineEdit);
+            this.Polyline.off('editable:vertex:clicked', OnManeuverPolylineEdit);
+            this.Polyline.off('editable: vertex: drag', OnPolylineDrag);
 
-        this.StartMarker.off('dragend', OnManeuverEdit);
-        this.EndMarker.off('dragend', OnManeuverEdit);
-        this.Polyline.off('editable:vertex:dragend', OnManeuverPolylineEdit);
-        this.Polyline.off('editable:vertex:clicked', OnManeuverPolylineEdit);
-        this.Polyline.off('editable: vertex: drag', OnPolylineDrag);
 
-
-        this.StartMarker.draggable = false;
-        this.EndMarker.draggable = false;
-        this.Polyline.disableEdit();
+            this.StartMarker.draggable = false;
+            this.EndMarker.draggable = false;
+            this.Polyline.disableEdit();
+        }
+       
 
     }
     SetSelect() {
         this.StartMarker.setIcon(this.BlackIcon);
         this.EndMarker.setIcon(this.BlackIcon);
-        this.Polyline.arrowheads();
         mapStructure.FiguresOnMap.addLayer(this.Polyline);
         this.Selected = true;
+        if (!this.Editable) {
+            this.Polyline.arrowheads();
 
-        this.StartMarker.on('dragend', OnManeuverEdit);
-        this.EndMarker.on('dragend', OnManeuverEdit);
-        this.Polyline.on('editable:vertex:dragend', OnManeuverPolylineEdit);
-        this.Polyline.on('editable:vertex:clicked', OnManeuverPolylineEdit);
-        this.Polyline.on('editable: vertex: drag', OnPolylineDrag);
+            this.StartMarker.on('dragend', OnManeuverEdit);
+            this.EndMarker.on('dragend', OnManeuverEdit);
+            this.Polyline.on('editable:vertex:dragend', OnManeuverPolylineEdit);
+            this.Polyline.on('editable:vertex:clicked', OnManeuverPolylineEdit);
+            this.Polyline.on('editable: vertex: drag', OnPolylineDrag);
 
-        this.StartMarker.draggable = true;
-        this.StartMarker.dragging.enable();
-        this.EndMarker.draggable = true;
-        this.EndMarker.dragging.enable();
-        this.Polyline.enableEdit();
+            this.StartMarker.draggable = true;
+            this.StartMarker.dragging.enable();
+            this.EndMarker.draggable = true;
+            this.EndMarker.dragging.enable();
+            this.Polyline.enableEdit();
+        }
 
     }
 
@@ -833,6 +840,7 @@ function deleteSelectedObjects() {
             mapStructure.LoadedObjectsToRemove.push(element);
         }
     })
+    mapStructure.ObjectsToRemove = [];
     cancelDelete();
 }
 

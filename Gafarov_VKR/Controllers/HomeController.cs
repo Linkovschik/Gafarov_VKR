@@ -200,7 +200,7 @@ namespace Gafarov_VKR.Controllers
         }
 
         [HttpGet]
-        public PartialViewResult GetSmthSuggestedUsers(Models.MyModels.AcceptedSignModel selectedSign)
+        public PartialViewResult GetSmthSuggestedUsers()
         {
             ViewBag.SmthSuggestedUsers = getSmthSuggestedUsers();
             return PartialView();
@@ -224,6 +224,18 @@ namespace Gafarov_VKR.Controllers
             foreach(var user in usersWhoSuggestedSigns)
             {
                 if(!userIds.Contains(user.Id))
+                {
+                    userIds.Add(user.Id);
+                    result.Add(new Models.MyModels.UserSafeModel()
+                    {
+                        Id = user.Id,
+                        Login = user.Login
+                    });
+                }
+            }
+            foreach (var user in usersWhoSuggestedManeuvers)
+            {
+                if (!userIds.Contains(user.Id))
                 {
                     userIds.Add(user.Id);
                     result.Add(new Models.MyModels.UserSafeModel()
@@ -1327,7 +1339,9 @@ namespace Gafarov_VKR.Controllers
                 maneuverProblems,
                 startPoint,
                 signs,
-                maneuvers
+                maneuvers,
+                userData.Time,
+                userData.Speed
             );
 
             List<Models.AlgorithmClass.BaseMark> resultingMarks = algorithm.GetResultingMarks();

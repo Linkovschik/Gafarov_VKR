@@ -6,6 +6,34 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
+function OnTimeEdit() {
+    var maxValue = 300;
+    var minValue = 30;
+    var element = $("#timeInput");
+    var value = Number.parseInt(element.val());
+    if (!isNaN(value) && value >= minValue && value < maxValue) {
+        userData.Time = value;
+    }
+}
+function OnSpeedEdit() {
+    var maxValue = 60;
+    var minValue = 20;
+    var element = $("#speedInput");
+    var value = Number.parseInt(element.val());
+    if (!isNaN(value) && value >= minValue && value < maxValue) {
+        userData.AverageSpeed = value;
+    }
+}
+
+function onTimePoleBlur() {
+    var element = $("#timeInput");
+    element[0].value = userData.Time;
+}
+function onSpeedPoleBlur() {
+    var element = $("#speedInput");
+    element[0].value = userData.AverageSpeed;
+}
+
 
 function onCreateRating() {
     mapStructure.SelectedObject.HasNoRatingYet = false;
@@ -385,6 +413,8 @@ class UserData {
         this.SignIndexMap = new Map();
         this.ManeuverProblemMap = new Map();
         this.ManeuverIndexMap = new Map();
+        this.Time = 90;
+        this.AverageSpeed = 30;
     }
 
     setSignTypes(signTypes) {
@@ -591,7 +621,9 @@ function startAlgorithm() {
     var userDataToSend = {
         SignProblems: [...userData.SignProblemMap],
         ManeuverProblems: [...userData.ManeuverProblemMap],
-        StartPosition: userData.StartPoint
+        StartPosition: userData.StartPoint,
+        Time: userData.Time,
+        Speed: userData.AverageSpeed
     }
     var data = JSON.stringify(userDataToSend);
     $.ajax({

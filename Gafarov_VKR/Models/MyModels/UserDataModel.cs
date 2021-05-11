@@ -12,5 +12,9 @@ namespace Gafarov_VKR.Models.MyModels
         public List<List<object>> ManeuverProblems { get; set; }
 
         public PointModel StartPosition { get; set; }
+
+        public int Time { get; set; }
+
+        public int Speed { get; set; }
     }
 }

@@ -142,7 +142,7 @@ function OnSignClick(e) {
             ToggleSelected(found);
             break;
         case MapStatesEnum.Deleting:
-            if (!mapStructure.ObjectsToRemove.includes(found)) {
+            if (!mapStructure.ObjectsToRemove.includes(found) && found.Editable) {
                 mapStructure.ObjectsToRemove.push(found);
                 found.SetSelect();
             }
@@ -203,8 +203,8 @@ class Sign extends UserInput{
 
         if (this.Editable) {
             this.Marker.off('dragend', OnSignEdit);
-            this.Marker.draggable = false;
             this.Marker.dragging.disable();
+            this.Marker.draggable = false;
         }
     }
     SetSelect() {
@@ -243,7 +243,7 @@ function OnManeuverClick(e) {
             ToggleSelected(found);
             break;
         case MapStatesEnum.Deleting:
-            if (!mapStructure.ObjectsToRemove.includes(found)) {
+            if (!mapStructure.ObjectsToRemove.includes(found) && found.Editable) {
                 mapStructure.ObjectsToRemove.push(found);
                 found.SetSelect();
             }
@@ -350,10 +350,10 @@ class Maneuver extends UserInput{
             this.Polyline.off('editable: vertex: drag', OnPolylineDrag);
             
 
-            this.StartMarker.draggable = false;
             this.StartMarker.dragging.disable();
-            this.EndMarker.draggable = false;
+            this.StartMarker.draggable = false;
             this.EndMarker.dragging.disable();
+            this.EndMarker.draggable = false;
             this.Polyline.disableEdit();
         }
         
@@ -761,6 +761,7 @@ function deleteSelectedObjects() {
         else {
             mapStructure.FiguresOnMap.removeLayer(element.StartMarker);
             mapStructure.FiguresOnMap.removeLayer(element.EndMarker);
+            mapStructure.FiguresOnMap.removeLayer(element.Polyline);
         }
         //удаляю из списка всех объектов
         var index = mapStructure.ObjectsOnMap.indexOf(element);
@@ -784,6 +785,7 @@ function deleteSelectedObjects() {
             mapStructure.LoadedObjectsToRemove.push(element);
         }
     })
+    mapStructure.ObjectsToRemove = [];
     cancelDelete();
 }
 
