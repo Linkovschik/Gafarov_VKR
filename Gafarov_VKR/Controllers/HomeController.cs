@@ -1336,7 +1336,7 @@ namespace Gafarov_VKR.Controllers
             //signs.RemoveRange(0, 12);
             //maneuvers.RemoveRange(0, 25);
             //signs.RemoveRange(signs.Count - 1, 1);
-            //maneuvers.RemoveRange(maneuvers.Count-7, 6);
+            //maneuvers.RemoveRange(maneuvers.Count - 7, 6);
 
             Models.AlgorithmClass.Algorithm algorithm = new Models.AlgorithmClass.Algorithm
             (

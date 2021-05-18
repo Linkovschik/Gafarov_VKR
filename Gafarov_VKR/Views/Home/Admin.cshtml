@@ -61,8 +61,9 @@
                             @foreach (var signTypeData in ViewBag.SignTypeData)
                             {
                             <label class="form-label">@signTypeData.SignTypeName</label>
-                            var id = "signProblem_" + signTypeData.SignTypeId;
-                            <input type="number" id="@id" class="form-control mb-3" onchange="OnSignPenaltyEdit(this.id)" onblur="onSignPenaltyPoleBlur(this.id)" value="@signTypeData.SignTypePenalty.ToString()" />
+                                var id = "signProblem_" + signTypeData.SignTypeId;
+                                double t = Math.Round(signTypeData.SignTypePenalty, 2);
+                            <input type="number" id="@id" step="0.1" class="form-control mb-3" onchange="OnSignPenaltyEdit(this.id)" onblur="onSignPenaltyPoleBlur(this.id)" value="@t" />
                             }
                         </div>
                         <div class="col-6">
@@ -71,7 +72,8 @@
                             {
                             <label class="form-label">@maneuverTypeData.ManeuverTypeName</label>
                             var id = "maneuverProblem_" + maneuverTypeData.ManeuverTypeId;
-                            <input type="number" id="@id" class="form-control mb-3" onchange="OnManeuverPenaltyEdit(this.id)" onblur="onManeuverPenaltyPoleBlur(this.id)" value="@maneuverTypeData.ManeuverTypePenalty.ToString()" />
+                            var t = Math.Round(maneuverTypeData.ManeuverTypePenalty,2);
+                            <input type="number" id="@id" step="0.1" class="form-control mb-3" onchange="OnManeuverPenaltyEdit(this.id)" onblur="onManeuverPenaltyPoleBlur(this.id)" value="@t" />
                             }
                         </div>
                 </div>
