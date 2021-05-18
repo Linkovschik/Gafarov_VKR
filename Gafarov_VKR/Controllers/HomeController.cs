@@ -1330,6 +1330,13 @@ namespace Gafarov_VKR.Controllers
             };
             List<Models.AlgorithmClass.Sign> signs = getSigns();
             List<Models.AlgorithmClass.Maneuver> maneuvers = getManeuvers();
+            //List<Models.AlgorithmClass.Sign> signs = new List<Models.AlgorithmClass.Sign>();
+            //List<Models.AlgorithmClass.Maneuver> maneuvers = new List<Models.AlgorithmClass.Maneuver>();
+
+            //signs.RemoveRange(0, 12);
+            //maneuvers.RemoveRange(0, 25);
+            //signs.RemoveRange(signs.Count - 1, 1);
+            //maneuvers.RemoveRange(maneuvers.Count-7, 6);
 
             Models.AlgorithmClass.Algorithm algorithm = new Models.AlgorithmClass.Algorithm
             (
@@ -1342,7 +1349,7 @@ namespace Gafarov_VKR.Controllers
                 userData.Speed
             );
             updatePenalties(algorithm);
-
+            algorithm.ExecuteAlgorithm();
             List<Models.AlgorithmClass.BaseMark> resultingMarks = algorithm.GetResultingMarks();
 
 

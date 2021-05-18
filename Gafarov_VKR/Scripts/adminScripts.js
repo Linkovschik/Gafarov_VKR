@@ -120,6 +120,7 @@ function onManeuverPenaltyPoleBlur(elementId) {
 }
 function OnSignPenaltyEdit(elementId) {
     var maxValue = 2147483646;
+    var minValue = 0;
     var index = elementId.indexOf('_');
     if (index > -1) {
         var keyIndex = Number.parseInt(elementId.substring(index + 1));
@@ -128,13 +129,22 @@ function OnSignPenaltyEdit(elementId) {
         }
         var element = $("#" + elementId);
         var value = Number.parseFloat(element.val());
-        if (!isNaN(value) && value >= 0 && value < maxValue) {
-            userData.SignTypeData.set(keyIndex, value);
+        if (!isNaN(value)) {
+            if (value < minValue) {
+                userData.SignTypeData.set(keyIndex, minValue);
+            }
+            else if (value > maxValue) {
+                userData.SignTypeData.set(keyIndex, maxValue);
+            }
+            else {
+                userData.SignTypeData.set(keyIndex, value);
+            }
         }
     }
 }
 function OnManeuverPenaltyEdit(elementId) {
     var maxValue = 2147483646;
+    var minValue = 0;
     var index = elementId.indexOf('_');
     if (index > -1) {
         var keyIndex = Number.parseInt(elementId.substring(index + 1));
@@ -143,8 +153,17 @@ function OnManeuverPenaltyEdit(elementId) {
         }
         var element = $("#" + elementId);
         var value = Number.parseFloat(element.val());
-        if (!isNaN(value) && value >= 0 && value < maxValue) {
-            userData.ManeuverTypeData.set(keyIndex, value);
+
+        if (!isNaN(value)) {
+            if (value < minValue) {
+                userData.ManeuverTypeData.set(keyIndex, minValue);
+            }
+            else if (value > maxValue) {
+                userData.ManeuverTypeData.set(keyIndex, maxValue);
+            }
+            else {
+                userData.ManeuverTypeData.set(keyIndex, value);
+            }
         }
     }
 }

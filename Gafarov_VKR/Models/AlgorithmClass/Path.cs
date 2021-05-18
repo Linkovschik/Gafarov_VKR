@@ -8,7 +8,8 @@ namespace Gafarov_VKR.Models.AlgorithmClass
 {
     public class Path
     {
-        public static double SortFuction(Interpolation.LinearSpline interpolation, Point point, Point startPoint)
+        public static double SortFuction(Interpolation.LinearSpline interpolation, Point point, 
+            Point startPoint)
         {
             
             double result = interpolation.Interpolate(point.Lat)- interpolation.Interpolate(startPoint.Lat);
@@ -35,6 +36,12 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 Lats.Add(mark.StartMarkerPoint.Lat);
                 Lngs.Add(mark.StartMarkerPoint.Lng);
             }
+
+            if(Lats.Count<=2 || Lngs.Count<=2) 
+            {
+                Lats = new List<double>() { 1, 1 };
+                Lngs = new List<double>() { 1, 1 };
+            }
             Interpolation.LinearSpline interpolation = Interpolation.LinearSpline.Interpolate(Lats, Lngs);
             var allMarks = _allMarks.OrderBy(mark => Path.SortFuction(interpolation,mark.StartMarkerPoint,startMarker.StartMarkerPoint)).ToList();
 
@@ -46,14 +53,22 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 int index = 0;
                 while (true)
                 {
-                    index += random.Next(0, 5);
-                    index %= allMarks.Count;
-                    path.AddMarker(allMarks[index]);
-                    if(path.Time > time)
+                    if (allMarks.Count>0)
                     {
-                        path.RemoveLastMarker();
+                        index += random.Next(0, allMarks.Count - 1);
+                        index %= allMarks.Count;
+                        path.AddMarker(allMarks[index]);
+                        if (path.Time > time)
+                        {
+                            path.RemoveLastMarker();
+                            break;
+                        }
+                    }
+                    else
+                    {
                         break;
                     }
+                    
                 }
                 result.Add(path);
             }

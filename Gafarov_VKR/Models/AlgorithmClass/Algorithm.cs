@@ -10,6 +10,8 @@ namespace Gafarov_VKR.Models.AlgorithmClass
         public Dictionary<string, double> SignPenalties { get; set; }
         public Dictionary<string, double> ManeuverPenalties { get; set; }
 
+        private double Cost { get; set; }
+        private List<BaseMark> ResultMarks { get; set; }
 
         private Dictionary<string, int> SignProblems { get; set; }
         private Dictionary<string, int> ManeuverProblems { get; set; }
@@ -57,6 +59,16 @@ namespace Gafarov_VKR.Models.AlgorithmClass
 
         public List<BaseMark> GetResultingMarks()
         {
+            return ResultMarks;
+        }
+
+        public double GetCost()
+        {
+            return Cost;
+        }
+
+        public void ExecuteAlgorithm()
+        {
             List<BaseMark> result = new List<BaseMark>();
             Random random = new Random();
             const int ITERATIONCOUNT = 1000;
@@ -97,14 +109,19 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                     values.Add(t.Value);
                 }
                 values = values.Where(p => p.Time <= Time).OrderByDescending(p=>p.Cost).ToList();
-                pathList = values.GetRange(0, PATHCOUNT);
+                if(values.Count>= PATHCOUNT)
+                    pathList = values.GetRange(0, PATHCOUNT);
+                else
+                    pathList = values.GetRange(0, values.Count);
             }
 
             foreach(var mark in pathList[0].InputMarkList)
             {
                 result.Add(mark);
             }
-            return result;
+
+            ResultMarks = result;
+            Cost = pathList[0].Cost;
         }
     }
 }

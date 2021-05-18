@@ -11,8 +11,16 @@ function OnTimeEdit() {
     var minValue = 30;
     var element = $("#timeInput");
     var value = Number.parseInt(element.val());
-    if (!isNaN(value) && value >= minValue && value < maxValue) {
-        userData.Time = value;
+    if (!isNaN(value)) {
+        if (value < minValue) {
+            userData.Time = minValue;
+        }
+        else if (value > maxValue) {
+            userData.Time = maxValue;
+        }
+        else {
+            userData.Time = value;
+        }
     }
 }
 function OnSpeedEdit() {
@@ -20,9 +28,18 @@ function OnSpeedEdit() {
     var minValue = 20;
     var element = $("#speedInput");
     var value = Number.parseInt(element.val());
-    if (!isNaN(value) && value >= minValue && value < maxValue) {
-        userData.AverageSpeed = value;
+    if (!isNaN(value)) {
+        if (value < minValue) {
+            userData.AverageSpeed = minValue;
+        }
+        else if (value > maxValue) {
+            userData.AverageSpeed = maxValue;
+        }
+        else {
+            userData.AverageSpeed = value;
+        }
     }
+
 }
 
 function onTimePoleBlur() {
@@ -165,6 +182,7 @@ function onManeuverProblemPoleBlur(elementId) {
 }
 function OnSignPropertyEdit(elementId) {
     var maxValue = 2147483646;
+    var minValue = 0;
     var index = elementId.indexOf('_');
     if (index > -1) {
         var keyIndex = Number.parseInt(elementId.substring(index+1));
@@ -173,13 +191,22 @@ function OnSignPropertyEdit(elementId) {
         }
         var element = $("#" + elementId);
         var value = Number.parseInt(element.val());
-        if (!isNaN(value) && value >= 0 && value < maxValue) {
-            userData.setSignTypeValue(keyIndex, value);
+        if (!isNaN(value)) {
+            if (value < minValue) {
+                userData.setSignTypeValue(keyIndex, minValue);
+            }
+            else if (value > maxValue) {
+                userData.setSignTypeValue(keyIndex, maxValue);
+            }
+            else {
+                userData.setSignTypeValue(keyIndex, value);
+            }
         }
     }
 }
 function OnManeuverPropertyEdit(elementId) {
     var maxValue = 2147483646;
+    var minValue = 0;
     var index = elementId.indexOf('_');
     if (index > -1) {
         var keyIndex = Number.parseInt(elementId.substring(index+1));
@@ -190,6 +217,17 @@ function OnManeuverPropertyEdit(elementId) {
         var value = Number.parseInt(element.val());
         if (!isNaN(value) && value >= 0 && value < maxValue) {
             userData.setManeuverTypeValue(keyIndex, value);
+        }
+        if (!isNaN(value)) {
+            if (value < minValue) {
+                userData.setManeuverTypeValue(keyIndex, minValue);
+            }
+            else if (value > maxValue) {
+                userData.setManeuverTypeValue(keyIndex, maxValue);
+            }
+            else {
+                userData.setManeuverTypeValue(keyIndex, value);
+            }
         }
     }
 }
