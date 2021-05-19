@@ -1394,7 +1394,9 @@ namespace Gafarov_VKR.Controllers
             {
                 Waypoints = waypointsResult,
                 ManeuverIds = maneuverIds,
-                SignIds = signIds
+                SignIds = signIds,
+                Difficulty = algorithm.GetCost(),
+                AverageDifficulty = algorithm.GetAverageCost()
             };
 
             var str = JsonConvert.SerializeObject(algorithmResult, Formatting.Indented);

@@ -55,6 +55,12 @@
         <button type="button" id="cancelBuildButton" class="btn btn-primary d-none" onclick="cancelPosition()">Отменить указание месторасположения</button>
         <button type="button" id="algorithmButton" class="btn btn-primary " onclick="startAlgorithm()" disabled>Построить мой маршрут</button>
     </div>
+    <div class="form-outline mb-2">
+        <label class="form-label">Суммарная сложность маршрута</label>
+        <input type="text" id="summaryRouteDifficulty" class="form-control" value="0.0" />
+        <label class="form-label">Средняя сложность маршрута</label>
+        <input type="text" id="averageRouteDifficulty" class="form-control" value="0.0" />
+    </div>
 </div>
 <style>
         /* .leaflet-control-container .leaflet-routing-container-hide {

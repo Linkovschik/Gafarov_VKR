@@ -213,35 +213,30 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             double distance = 0;
             Point currentPoint = StartMarker.StartMarkerPoint;
             Vector previousVector = new Vector(currentPoint, currentPoint);
-            foreach(var mark in InputMarkList)
+            double averageSignProblem = SignProblems.Values.Average();
+            double averageManeuversProblem = ManeuverProblems.Values.Average();
+            double sumSignsProblem = SignProblems.Values.Sum();
+            double sumManeuversProblem = ManeuverProblems.Values.Sum();
+            foreach (var mark in InputMarkList)
             {
                 Point nextPoint = null;
-                //подсчёт времени
+                //подсчёт расстояния
                 if (mark is Sign)
                 {
                     var sign = (mark as Sign);
                     distance += Point.CalculatePseudoManhattanDistance(currentPoint, sign.StartMarkerPoint);
-                    if (Double.IsNaN(distance))
-                    {
-                        ;
-                    }
-                    //расчёт штрафа
+
+                    //расчёт штрафа за проезд знака
                     double penalty = 0;
                     penalty += SignPenalties[sign.SignTypeName] * Speed;
                     distance += penalty;
-                    if (Double.IsNaN(distance))
-                    {
-                        ;
-                    }
-                    //расчёт штрафа за смену направления
+
+                    //расчёт штрафа за смену направления при проезде знака
                     double directionPenalty = 0;
                     Vector v1 = new Vector(currentPoint, sign.StartMarkerPoint);
                     directionPenalty+= (1 - Vector.GetCOS(v1, previousVector) - 1) * ManeuverPenalties["Разворот"] * Speed;
                     distance += directionPenalty;
-                    if (Double.IsNaN(distance))
-                    {
-                        ;
-                    }
+
                     nextPoint = (mark as Sign).StartMarkerPoint;
                 }
                 else if(mark is Maneuver)
@@ -259,7 +254,10 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                         distance += Point.CalculatePseudoManhattanDistance(maneuver.StartMarkerPoint, maneuver.EndMarkerPoint);
                     }
 
-                    //расчёт штрафа
+                    //расчёт штрафа за манёвр с учётом выполнения разворота для разворота
+                    //разворот для разворот присходит тогда, когда водитель заезжает на разворот
+                    //со стороны всречного движения (ему необходимо развернуться, 
+                    //чтобы не начинать манёвр на встречке
                     double penalty = 0;
                     int penaltyCount = 1;
                     Vector v1 = new Vector(currentPoint, maneuver.StartMarkerPoint);
@@ -290,23 +288,54 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                     currentPoint = nextPoint;
                 }
 
-                double averageSignProblem = SignProblems.Values.Average();
-                double averageManeuversProblem = ManeuverProblems.Values.Average();
-
                 //подсчёт стоимости
                 if (mark is Sign)
                 {
                     double signProblemProportion = 1;
+                    double signProblemRatio = 1;
                     if (averageSignProblem > 0)
-                        signProblemProportion = SignProblems[(mark as Sign).SignTypeName] / averageSignProblem;
-                    Cost += mark.AverageDifficulty * Math.Pow(0.5, SignCountsById[mark.Id]) * signProblemProportion;
+                    {
+                        signProblemProportion = (SignProblems[(mark as Sign).SignTypeName]) / averageSignProblem;
+                        if (signProblemProportion <= 0)
+                        {
+                            signProblemProportion = 1e-5;
+                        }
+                    }
+                        
+                    if (sumSignsProblem > 0)
+                    {
+                        signProblemRatio = (SignProblems[(mark as Sign).SignTypeName]) / sumSignsProblem;
+                        if(signProblemRatio <= 0)
+                        {
+                            signProblemRatio = 1e-5;
+                        }
+                    }
+                       
+                    Cost += mark.AverageDifficulty * Math.Pow(signProblemRatio, SignCountsById[mark.Id]) * signProblemProportion;
                 }
                 else if(mark is Maneuver)
                 {
                     double maneuverProblemProportion = 1;
+                    double maneuverProblemRatio = 1;
                     if (averageManeuversProblem > 0)
-                        maneuverProblemProportion = ManeuverProblems[(mark as Maneuver).ManeuverTypeName] / averageManeuversProblem;
-                    Cost += mark.AverageDifficulty * Math.Pow(0.7, ManeuverCountsById[mark.Id]) * maneuverProblemProportion;
+                    {
+                        maneuverProblemProportion = (ManeuverProblems[(mark as Maneuver).ManeuverTypeName]) / averageManeuversProblem;
+                        if (maneuverProblemProportion <= 0)
+                        {
+                            maneuverProblemProportion = 1e-5;
+                        }
+                    }
+                        
+                    if (sumManeuversProblem > 0)
+                    {
+                        maneuverProblemRatio = (ManeuverProblems[(mark as Maneuver).ManeuverTypeName]) / sumManeuversProblem;
+                        if (maneuverProblemRatio <= 0)
+                        {
+                            maneuverProblemRatio = 1e-5;
+                        }
+                    }
+                       
+                    Cost += mark.AverageDifficulty * Math.Pow(maneuverProblemRatio, ManeuverCountsById[mark.Id]) * maneuverProblemProportion;
                 }
 
             }
@@ -489,7 +518,6 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 changingMutation(averageMutationLength, random);
             }
         }
-
 
         public void Mutate(Random random, double time)
         {

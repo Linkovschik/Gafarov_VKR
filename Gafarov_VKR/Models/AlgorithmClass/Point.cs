@@ -36,21 +36,21 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             double delta_f = (p2.Lat - p1.Lat) * Math.PI / 180;
             double delta_l = (p2.Lng - p1.Lng) * Math.PI / 180;
 
-            double a = Math.Sin(delta_f / 2) * Math.Sin(delta_f / 2) +
-                      Math.Cos(f1) * Math.Cos(f2) *
-                      Math.Sin(delta_l / 2) * Math.Sin(delta_l / 2);
-            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            result = R * c; // in metres
-
-            //double a = Math.Sin(delta_f / 2) * Math.Sin(delta_f / 2);
+            //double a = Math.Sin(delta_f / 2) * Math.Sin(delta_f / 2) +
+            //          Math.Cos(f1) * Math.Cos(f2) *
+            //          Math.Sin(delta_l / 2) * Math.Sin(delta_l / 2);
             //double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            //double latitudeDistance = R * c;
+            //result = R * c; // in metres
 
-            //a = Math.Sin(delta_f / 2) * Math.Sin(delta_f / 2);
-            //c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            //double longtitudeDistance = R * c;
+            double a = Math.Sin(delta_f / 2) * Math.Sin(delta_f / 2);
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            double latitudeDistance = R * c;
 
-            //result = Math.Abs(longtitudeDistance) + Math.Abs(latitudeDistance);
+            a = Math.Sin(delta_l / 2) * Math.Sin(delta_l / 2);
+            c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            double longtitudeDistance = R * c;
+
+            result = Math.Abs(longtitudeDistance) + Math.Abs(latitudeDistance);
 
             return result;
         }

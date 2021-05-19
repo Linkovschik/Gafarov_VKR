@@ -457,7 +457,7 @@ class UserData {
 
     setSignTypes(signTypes) {
         signTypes.forEach(signType => {
-            this.SignProblemMap.set(signType, 1);
+            this.SignProblemMap.set(signType, 0);
             var index = this.SignIndexMap.size;
             this.SignIndexMap.set(index, signType);
         });
@@ -479,7 +479,7 @@ class UserData {
     }
     setManeuverTypes(maneuverTypes) {
         maneuverTypes.forEach(maneuverType => {
-            this.ManeuverProblemMap.set(maneuverType, 1);
+            this.ManeuverProblemMap.set(maneuverType, 0);
             var index = this.ManeuverIndexMap.size;
             this.ManeuverIndexMap.set(index, maneuverType);
         });
@@ -679,6 +679,10 @@ function startAlgorithm() {
         })
         var signIds = data.SignIds;
         var maneuverIds = data.ManeuverIds;
+
+        $("#summaryRouteDifficulty").val(data.Difficulty);
+        $("#averageRouteDifficulty").val(data.AverageDifficulty);
+
         mapStructure.FiguresOnMap.clearLayers();
         mapStructure.FiguresOnMap.addLayer(mapStructure.StartMarker);
         mapStructure.ObjectsOnMap.forEach(obj => {
