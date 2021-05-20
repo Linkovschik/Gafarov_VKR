@@ -206,7 +206,16 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                     }
                 }
             }
-
+            //сумма штрафов знаков и манёвров
+            double allPenaltiesSum = 0;
+            foreach (var pair in SignPenalties)
+            {
+                allPenaltiesSum += pair.Value;
+            }
+            foreach (var pair in ManeuverPenalties)
+            {
+                allPenaltiesSum += pair.Value;
+            }
             Cost = 0;
             AverageCost = 0;
             Time = 0;
@@ -228,13 +237,13 @@ namespace Gafarov_VKR.Models.AlgorithmClass
 
                     //расчёт штрафа за проезд знака
                     double penalty = 0;
-                    penalty += SignPenalties[sign.SignTypeName] * Speed;
+                    penalty += (SignPenalties[sign.SignTypeName] / allPenaltiesSum) * Speed;
                     distance += penalty;
 
                     //расчёт штрафа за смену направления при проезде знака
                     double directionPenalty = 0;
                     Vector v1 = new Vector(currentPoint, sign.StartMarkerPoint);
-                    directionPenalty+= (1 - Vector.GetCOS(v1, previousVector) - 1) * ManeuverPenalties["Разворот"] * Speed;
+                    directionPenalty+= (1 - Vector.GetCOS(v1, previousVector) - 1) * Math.Max(1, ManeuverPenalties["Разворот"]) * Speed;
                     distance += directionPenalty;
 
                     nextPoint = (mark as Sign).StartMarkerPoint;
@@ -257,7 +266,7 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                     //расчёт штрафа за манёвр с учётом выполнения разворота для разворота
                     //разворот для разворот присходит тогда, когда водитель заезжает на разворот
                     //со стороны всречного движения (ему необходимо развернуться, 
-                    //чтобы не начинать манёвр на встречке
+                    //чтобы не начинать манёвр на встречке)
                     double penalty = 0;
                     int penaltyCount = 1;
                     Vector v1 = new Vector(currentPoint, maneuver.StartMarkerPoint);
@@ -271,12 +280,12 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                             penaltyCount +=1;
                         }
                     }
-                    penalty += penaltyCount * ManeuverPenalties[maneuver.ManeuverTypeName] * Speed;
+                    penalty += penaltyCount * ManeuverPenalties[maneuver.ManeuverTypeName] / allPenaltiesSum * Speed;
                     distance += penalty;
 
                     //расчёт штрафа за смену направления
                     double directionPenalty = 0;
-                    directionPenalty += (1 - Vector.GetCOS(v1, previousVector) - 1) * ManeuverPenalties["Разворот"] * Speed;
+                    directionPenalty += (1 - Vector.GetCOS(v1, previousVector) - 1) * Math.Max(1,ManeuverPenalties["Разворот"]) * Speed;
                     distance += directionPenalty;
 
                     nextPoint = (mark as Maneuver).EndMarkerPoint;
