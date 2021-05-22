@@ -191,7 +191,7 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                     }
                     else
                     {
-                        SignCountsById.Add(mark.Id, 0);
+                        SignCountsById.Add(mark.Id, 1);
                     }
                 }
                 else if (mark is Maneuver)
@@ -202,7 +202,7 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                     }
                     else
                     {
-                        ManeuverCountsById.Add(mark.Id, 0);
+                        ManeuverCountsById.Add(mark.Id, 1);
                     }
                 }
             }
@@ -216,6 +216,8 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             {
                 allPenaltiesSum += pair.Value;
             }
+            if (allPenaltiesSum == 0)
+                allPenaltiesSum = 1;
             Cost = 0;
             AverageCost = 0;
             Time = 0;
@@ -226,6 +228,21 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             double averageManeuversProblem = ManeuverProblems.Values.Average();
             double sumSignsProblem = SignProblems.Values.Sum();
             double sumManeuversProblem = ManeuverProblems.Values.Sum();
+
+
+            Dictionary<int, int> signCounter = new Dictionary<int, int>(SignCountsById);
+            var keys = SignCountsById.Keys;
+            foreach(var key in keys)
+            {
+                signCounter[key] = 0;
+            }
+            Dictionary<int, int> maneuverCounter = new Dictionary<int, int>(ManeuverCountsById);
+            keys = ManeuverCountsById.Keys;
+            foreach (var key in keys)
+            {
+                maneuverCounter[key] = 0;
+            }
+
             foreach (var mark in InputMarkList)
             {
                 Point nextPoint = null;
@@ -319,8 +336,9 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                             signProblemRatio = 1e-5;
                         }
                     }
-                       
-                    Cost += mark.AverageDifficulty * Math.Pow(signProblemRatio, SignCountsById[mark.Id]) * signProblemProportion;
+                    
+                    signCounter[mark.Id]+=1;
+                    Cost += mark.AverageDifficulty * Math.Pow(signProblemRatio, signCounter[mark.Id] - 1) * signProblemProportion;
                 }
                 else if(mark is Maneuver)
                 {
@@ -343,8 +361,9 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                             maneuverProblemRatio = 1e-5;
                         }
                     }
-                       
-                    Cost += mark.AverageDifficulty * Math.Pow(maneuverProblemRatio, ManeuverCountsById[mark.Id]) * maneuverProblemProportion;
+
+                    maneuverCounter[mark.Id]+=1;
+                    Cost += mark.AverageDifficulty * Math.Pow(maneuverProblemRatio, maneuverCounter[mark.Id] - 1) * maneuverProblemProportion;
                 }
 
             }
@@ -546,7 +565,90 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             //обязательно пересчитать время и стоимость после изменений!
             countCostAndTime();
         }
+
+        public Path Crossover(Random random, Path father)
+        {
+            Path child = Path.GetCopy(this);
+            Path mother = this;
+            List<CrossoverPoint> crossPoints = new List<CrossoverPoint>();
+            for(int motherIndex = 1; motherIndex<this.InputMarkList.Count - 1; ++motherIndex)
+            {
+                for(int fatherIndex = 1; fatherIndex < father.InputMarkList.Count - 1; ++fatherIndex)
+                {
+                    if(this.InputMarkList[motherIndex].Id == father.InputMarkList[fatherIndex].Id)
+                    {
+                        crossPoints.Add(new CrossoverPoint(
+                            this.InputMarkList[motherIndex].Id,
+                            motherIndex, 
+                            fatherIndex));
+
+                        if(this.InputMarkList[motherIndex].Id == 0)
+                        {
+                            throw new Exception("Нельзя брать начальную точку!");
+                        }
+                    }
+                }
+            }
+
+            int motherCrossIndex = 1;
+            int fatherCrossIndex = 1;
+
+            if (crossPoints.Count <= 0)
+            {
+                motherCrossIndex = random.Next(1, mother.InputMarkList.Count - 1);
+                fatherCrossIndex = random.Next(1, father.InputMarkList.Count - 1);
+            } 
+            else
+            {
+                int chosenCrossPointIndex = random.Next(crossPoints.Count);
+                var chosenCrossPoint = crossPoints[chosenCrossPointIndex];
+                motherCrossIndex = chosenCrossPoint.MotherIndex;
+                fatherCrossIndex = chosenCrossPoint.FatherIndex;
+            }
+            
+            bool motherFirst = random.Next(2) == 0 ? true : false;
+           
+            child.InputMarkList.Clear();
+            if (motherFirst)
+            {
+                var firstPart = mother.InputMarkList.GetRange(0, motherCrossIndex);
+                var lastPart = father.InputMarkList.GetRange(fatherCrossIndex,
+                    father.InputMarkList.Count - fatherCrossIndex);
+
+                child.InputMarkList.AddRange(firstPart);
+                child.InputMarkList.AddRange(lastPart);
+            }
+            else
+            {
+                var firstPart = father.InputMarkList.GetRange(0, fatherCrossIndex);
+                var lastPart = mother.InputMarkList.GetRange(motherCrossIndex,
+                    mother.InputMarkList.Count - motherCrossIndex);
+
+                child.InputMarkList.AddRange(firstPart);
+                child.InputMarkList.AddRange(lastPart);
+            }
+
+
+            if (child.InputMarkList[0].StartMarkerPoint.Lat !=
+                child.InputMarkList[child.InputMarkList.Count - 1].StartMarkerPoint.Lat ||
+                child.InputMarkList[0].StartMarkerPoint.Lng !=
+                child.InputMarkList[child.InputMarkList.Count - 1].StartMarkerPoint.Lng)
+            {
+                throw new Exception("Неправильная рекомбинация!");
+            }
+            return child;
+        }
     }
-
-
+    public class CrossoverPoint
+    {
+        public int MarkId { get; set; }
+        public int MotherIndex { get; set; }
+        public int FatherIndex { get; set; }
+        public CrossoverPoint(int markId, int motherIndex, int fatherIndex)
+        {
+            MarkId = markId;
+            MotherIndex = motherIndex;
+            FatherIndex = fatherIndex;
+        }
+    }
 }

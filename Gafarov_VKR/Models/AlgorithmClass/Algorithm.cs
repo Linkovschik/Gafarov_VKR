@@ -7,6 +7,7 @@ namespace Gafarov_VKR.Models.AlgorithmClass
 {
     public class Algorithm
     {
+        public Path _LastFixedSolution_ { get; set; }
         public double _Literally_Avg_For_10_Rides_ { get; set; }
         public double _Literally_Max_For_10_Rides_ { get; set; }
 
@@ -92,14 +93,20 @@ namespace Gafarov_VKR.Models.AlgorithmClass
 
         public void ExecuteAlgorithm()
         {
-            for (int replayCount = 0; replayCount < 10; replayCount++)
+            int TRYCOUNT = 10;
+            for (int replayCount = 0; TRYCOUNT < 10; replayCount++)
             {
-
                 List<BaseMark> result = new List<BaseMark>();
                 Random random = new Random();
-                const int ITERATIONCOUNT = 100;
+                const int ITERATIONCOUNT = 10;
                 const int PATHCOUNT = 10;
                 const int MUTATIONCOUNT = 5;
+                const int CROSSOVERCOUNT = 5;
+
+                if(PATHCOUNT<2)
+                {
+                    throw new Exception();
+                }
 
                 List<BaseMark> allMarks = new List<BaseMark>();
                 allMarks.AddRange(Signs);
@@ -119,16 +126,44 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                     Dictionary<double, Path> allDescendants = new Dictionary<double, Path>();
                     foreach (Path path in pathList)
                     {
+                        //родители участвуют в отборе
                         if (!allDescendants.Keys.Contains(path.Time * path.Cost))
                             allDescendants.Add(path.Time * path.Cost, path);
-                        for (int mutatantIndex = 0; mutatantIndex < MUTATIONCOUNT; ++mutatantIndex)
-                        {
-                            Path mutant = Path.GetCopy(path);
-                            mutant.Mutate(random, Time);
-                            if (!allDescendants.Keys.Contains(mutant.Time * mutant.Cost))
-                                allDescendants.Add(mutant.Time * mutant.Cost, mutant);
-                        }
+
+                      
                     }
+
+                    for (int crossoverCount = 0; crossoverCount < CROSSOVERCOUNT; ++crossoverCount)
+                    {
+                        int motherIndex = random.Next(0, pathList.Count);
+                        int fatherIndex = random.Next(0, pathList.Count);
+                        int tries = 0;
+                        while (fatherIndex == motherIndex && tries<100)
+                        {
+                            fatherIndex = random.Next(0, pathList.Count);
+                            tries += 1;
+                        }
+                        //если так и не получилось взять разных отца и мать
+                        if (fatherIndex == motherIndex)
+                        {
+                            fatherIndex = motherIndex > 0 ? motherIndex - 1 : motherIndex + 1;
+                        }
+
+                        Path child = pathList[motherIndex].Crossover(random, pathList[fatherIndex]);
+                        child.Mutate(random, Time);
+                        if (!allDescendants.Keys.Contains(child.Time * child.Cost))
+                            allDescendants.Add(child.Time * child.Cost, child);
+                    }
+
+                    for (int mutatantIndex = 0; mutatantIndex < MUTATIONCOUNT; ++mutatantIndex)
+                    {
+                        int mutantIndex = random.Next(0, pathList.Count);
+                        Path mutant = Path.GetCopy(pathList[mutantIndex]);
+                        mutant.Mutate(random, Time);
+                        if (!allDescendants.Keys.Contains(mutant.Time * mutant.Cost))
+                            allDescendants.Add(mutant.Time * mutant.Cost, mutant);
+                    }
+
                     List<Path> values = new List<Path>();
                     foreach (var t in allDescendants)
                     {
@@ -149,10 +184,12 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 ResultMarks = result;
                 Cost = pathList[0].Cost;
                 AverageCost = pathList[0].AverageCost;
+
+                _LastFixedSolution_ = pathList[0];
                 _Literally_Max_For_10_Rides_ = Math.Max(_Literally_Max_For_10_Rides_, Cost);
                 _Literally_Avg_For_10_Rides_ += Cost;
             }
-            _Literally_Avg_For_10_Rides_ /= 10;
+            _Literally_Avg_For_10_Rides_ /= TRYCOUNT;
         }
     }
 }

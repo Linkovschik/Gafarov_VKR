@@ -7,8 +7,6 @@ namespace Gafarov_VKR.Models.AlgorithmClass
 {
     public class Sign : BaseMark
     {
-
-
         public string SignTypeName { get; set; }
     }
 }
