@@ -7,10 +7,12 @@ namespace Gafarov_VKR.Models.AlgorithmClass
 {
     public class Algorithm
     {
-        public Path _LastFixedSolution_ { get; set; }
+        public List<Path> AllSolutions { get; set; }
         public double _Literally_Avg_For_10_Rides_ { get; set; }
         public double _Literally_Max_For_10_Rides_ { get; set; }
 
+
+        private double AlgorithmTime { get; set; }
         public Dictionary<string, double> SignPenalties { get; set; }
         public Dictionary<string, double> ManeuverPenalties { get; set; }
 
@@ -74,6 +76,10 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 int current = ManeuverProblems[key];
                 ManeuverProblems[key] = current + 1;
             }
+
+            _Literally_Avg_For_10_Rides_ = 0;
+            _Literally_Max_For_10_Rides_ = 0;
+            AllSolutions = new List<Path>();
         }
 
         public List<BaseMark> GetResultingMarks()
@@ -91,17 +97,24 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             return _Literally_Avg_For_10_Rides_;
         }
 
+        public double GetAlgorithmTime()
+        {
+            return AlgorithmTime;
+        }
+
+
         public void ExecuteAlgorithm()
         {
-            int TRYCOUNT = 10;
-            for (int replayCount = 0; TRYCOUNT < 10; replayCount++)
+            int TRYCOUNT = 1;
+            for (int replayCount = 0; replayCount < TRYCOUNT; replayCount++)
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 List<BaseMark> result = new List<BaseMark>();
                 Random random = new Random();
-                const int ITERATIONCOUNT = 10;
+                const int ITERATIONCOUNT = 100;
                 const int PATHCOUNT = 10;
-                const int MUTATIONCOUNT = 5;
-                const int CROSSOVERCOUNT = 5;
+                //const int MUTATIONCOUNT = 5;
+                const int CHILDCOUNT = 50;
 
                 if(PATHCOUNT<2)
                 {
@@ -129,11 +142,9 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                         //родители участвуют в отборе
                         if (!allDescendants.Keys.Contains(path.Time * path.Cost))
                             allDescendants.Add(path.Time * path.Cost, path);
-
-                      
                     }
 
-                    for (int crossoverCount = 0; crossoverCount < CROSSOVERCOUNT; ++crossoverCount)
+                    for (int crossoverCount = 0; crossoverCount < CHILDCOUNT; ++crossoverCount)
                     {
                         int motherIndex = random.Next(0, pathList.Count);
                         int fatherIndex = random.Next(0, pathList.Count);
@@ -155,7 +166,7 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                             allDescendants.Add(child.Time * child.Cost, child);
                     }
 
-                    for (int mutatantIndex = 0; mutatantIndex < MUTATIONCOUNT; ++mutatantIndex)
+                    for (int mutatantIndex = 0; mutatantIndex < PATHCOUNT; ++mutatantIndex)
                     {
                         int mutantIndex = random.Next(0, pathList.Count);
                         Path mutant = Path.GetCopy(pathList[mutantIndex]);
@@ -184,12 +195,53 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 ResultMarks = result;
                 Cost = pathList[0].Cost;
                 AverageCost = pathList[0].AverageCost;
+                watch.Stop();
 
-                _LastFixedSolution_ = pathList[0];
-                _Literally_Max_For_10_Rides_ = Math.Max(_Literally_Max_For_10_Rides_, Cost);
-                _Literally_Avg_For_10_Rides_ += Cost;
+                AlgorithmTime += (watch.ElapsedMilliseconds/1000.00);
+                _Literally_Max_For_10_Rides_ += Cost;
+                //_Literally_Avg_For_10_Rides_ += Cost;
+                AllSolutions.Add(pathList[0]);
             }
-            _Literally_Avg_For_10_Rides_ /= TRYCOUNT;
+
+            if(AllSolutions!=null)
+            {
+                for(int i=0; i<AllSolutions.Count; ++i)
+                {
+                    double diff = 0;
+                    for (int j = 0; j < AllSolutions.Count; ++j)
+                    {
+                        if (i != j)
+                        {
+                            diff +=
+                                CountDifferenceOfSolutions(AllSolutions[i], AllSolutions[j]);
+                        }
+                    }
+                    diff /= AllSolutions.Count;
+                    _Literally_Avg_For_10_Rides_ += diff;
+                }
+            }
+            _Literally_Avg_For_10_Rides_ /= (double)TRYCOUNT;
+            _Literally_Max_For_10_Rides_ /= (double)TRYCOUNT;
+            AlgorithmTime /= (double)TRYCOUNT;
         }
+
+        public int CountDifferenceOfSolutions(Path p1, Path p2)
+        {
+            int result = 0;
+            foreach (var mark in p1.InputMarkList)
+            {
+                if (mark is Sign &&
+                    !p2.InputMarkList.Any(x => ((x is Sign) && x.Id == mark.Id)))
+                {
+                    result += 1;
+                }
+                if (mark is Maneuver &&
+                    !p2.InputMarkList.Any(x => ((x is Maneuver) && x.Id == mark.Id)))
+                {
+                    result += 1;
+                }
+            }
+            return result;
+        } 
     }
 }

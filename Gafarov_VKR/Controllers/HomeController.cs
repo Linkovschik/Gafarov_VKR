@@ -1396,7 +1396,8 @@ namespace Gafarov_VKR.Controllers
                 ManeuverIds = maneuverIds,
                 SignIds = signIds,
                 Difficulty = algorithm.GetCost(),
-                AverageDifficulty = algorithm.GetAverageCost()
+                AverageDifficulty = algorithm.GetAverageCost(),
+                AlgorithmTime = algorithm.GetAlgorithmTime()
             };
 
             var str = JsonConvert.SerializeObject(algorithmResult, Formatting.Indented);

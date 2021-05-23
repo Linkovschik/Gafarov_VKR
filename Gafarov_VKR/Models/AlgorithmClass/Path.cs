@@ -208,13 +208,17 @@ namespace Gafarov_VKR.Models.AlgorithmClass
             }
             //сумма штрафов знаков и манёвров
             double allPenaltiesSum = 0;
+            double allSignPenalties = 0;
+            double allManeuverPenalties = 0;
             foreach (var pair in SignPenalties)
             {
                 allPenaltiesSum += pair.Value;
+                allSignPenalties += pair.Value;
             }
             foreach (var pair in ManeuverPenalties)
             {
                 allPenaltiesSum += pair.Value;
+                allManeuverPenalties += pair.Value;
             }
             if (allPenaltiesSum == 0)
                 allPenaltiesSum = 1;
@@ -254,13 +258,18 @@ namespace Gafarov_VKR.Models.AlgorithmClass
 
                     //расчёт штрафа за проезд знака
                     double penalty = 0;
-                    penalty += (SignPenalties[sign.SignTypeName] / allPenaltiesSum) * Speed;
+                    penalty += (SignPenalties[sign.SignTypeName] / allSignPenalties) * Speed;
                     distance += penalty;
 
                     //расчёт штрафа за смену направления при проезде знака
                     double directionPenalty = 0;
                     Vector v1 = new Vector(currentPoint, sign.StartMarkerPoint);
-                    directionPenalty+= (1 - Vector.GetCOS(v1, previousVector) - 1) * Math.Max(1, ManeuverPenalties["Разворот"]) * Speed;
+                    double cos = Vector.GetCOS(v1, previousVector);
+                    if(cos <= 0)
+                    {
+                        directionPenalty += Math.Abs(1 - cos) * Math.Max(1, ManeuverPenalties["Разворот"]) * Speed;
+                        //directionPenalty += 300;
+                    }
                     distance += directionPenalty;
 
                     nextPoint = (mark as Sign).StartMarkerPoint;
@@ -297,12 +306,17 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                             penaltyCount +=1;
                         }
                     }
-                    penalty += penaltyCount * ManeuverPenalties[maneuver.ManeuverTypeName] / allPenaltiesSum * Speed;
+                    penalty += penaltyCount * ManeuverPenalties[maneuver.ManeuverTypeName] / allManeuverPenalties * Speed;
                     distance += penalty;
 
                     //расчёт штрафа за смену направления
                     double directionPenalty = 0;
-                    directionPenalty += (1 - Vector.GetCOS(v1, previousVector) - 1) * Math.Max(1,ManeuverPenalties["Разворот"]) * Speed;
+                    double cos = Vector.GetCOS(v1, previousVector);
+                    if (cos <= 0)
+                    {
+                        directionPenalty += Math.Abs(1 - cos) * Math.Max(1, ManeuverPenalties["Разворот"]) * Speed;
+                        //directionPenalty += 300;
+                    }
                     distance += directionPenalty;
 
                     nextPoint = (mark as Maneuver).EndMarkerPoint;
@@ -318,7 +332,6 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                 if (mark is Sign)
                 {
                     double signProblemProportion = 1;
-                    double signProblemRatio = 1;
                     if (averageSignProblem > 0)
                     {
                         signProblemProportion = (SignProblems[(mark as Sign).SignTypeName]) / averageSignProblem;
@@ -328,22 +341,12 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                         }
                     }
                         
-                    if (sumSignsProblem > 0)
-                    {
-                        signProblemRatio = (SignProblems[(mark as Sign).SignTypeName]) / sumSignsProblem;
-                        if(signProblemRatio <= 0)
-                        {
-                            signProblemRatio = 1e-5;
-                        }
-                    }
-                    
                     signCounter[mark.Id]+=1;
-                    Cost += mark.AverageDifficulty * Math.Pow(signProblemRatio, signCounter[mark.Id] - 1) * signProblemProportion;
+                    Cost += mark.AverageDifficulty * Math.Pow(0.5, signCounter[mark.Id] - 1) * signProblemProportion;
                 }
                 else if(mark is Maneuver)
                 {
                     double maneuverProblemProportion = 1;
-                    double maneuverProblemRatio = 1;
                     if (averageManeuversProblem > 0)
                     {
                         maneuverProblemProportion = (ManeuverProblems[(mark as Maneuver).ManeuverTypeName]) / averageManeuversProblem;
@@ -352,18 +355,9 @@ namespace Gafarov_VKR.Models.AlgorithmClass
                             maneuverProblemProportion = 1e-5;
                         }
                     }
-                        
-                    if (sumManeuversProblem > 0)
-                    {
-                        maneuverProblemRatio = (ManeuverProblems[(mark as Maneuver).ManeuverTypeName]) / sumManeuversProblem;
-                        if (maneuverProblemRatio <= 0)
-                        {
-                            maneuverProblemRatio = 1e-5;
-                        }
-                    }
 
                     maneuverCounter[mark.Id]+=1;
-                    Cost += mark.AverageDifficulty * Math.Pow(maneuverProblemRatio, maneuverCounter[mark.Id] - 1) * maneuverProblemProportion;
+                    Cost += mark.AverageDifficulty * Math.Pow(0.5, maneuverCounter[mark.Id] - 1) * maneuverProblemProportion;
                 }
 
             }

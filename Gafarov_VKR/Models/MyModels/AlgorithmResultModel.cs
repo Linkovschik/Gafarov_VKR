@@ -12,5 +12,6 @@ namespace Gafarov_VKR.Models.MyModels
         public List<PointModel> Waypoints { get; set; }
         public double Difficulty { get; set; }
         public double AverageDifficulty { get; set; }
+        public double AlgorithmTime { get; set; }
     }
 }

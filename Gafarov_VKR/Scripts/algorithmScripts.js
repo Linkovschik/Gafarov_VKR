@@ -181,7 +181,7 @@ function onManeuverProblemPoleBlur(elementId) {
     }
 }
 function OnSignPropertyEdit(elementId) {
-    var maxValue = 2147483646;
+    var maxValue = 10000;
     var minValue = 0;
     var index = elementId.indexOf('_');
     if (index > -1) {
@@ -205,7 +205,7 @@ function OnSignPropertyEdit(elementId) {
     }
 }
 function OnManeuverPropertyEdit(elementId) {
-    var maxValue = 2147483646;
+    var maxValue = 10000;
     var minValue = 0;
     var index = elementId.indexOf('_');
     if (index > -1) {
@@ -682,6 +682,7 @@ function startAlgorithm() {
 
         $("#summaryRouteDifficulty").val(data.Difficulty);
         $("#averageRouteDifficulty").val(data.AverageDifficulty);
+        $("#averageAlgorithmTime").val(data.AlgorithmTime);
 
         mapStructure.FiguresOnMap.clearLayers();
         mapStructure.FiguresOnMap.addLayer(mapStructure.StartMarker);

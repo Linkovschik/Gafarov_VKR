@@ -119,7 +119,7 @@ function onManeuverPenaltyPoleBlur(elementId) {
     }
 }
 function OnSignPenaltyEdit(elementId) {
-    var maxValue = 2147483646;
+    var maxValue = 10000;
     var minValue = 0;
     var index = elementId.indexOf('_');
     if (index > -1) {
@@ -143,7 +143,7 @@ function OnSignPenaltyEdit(elementId) {
     }
 }
 function OnManeuverPenaltyEdit(elementId) {
-    var maxValue = 2147483646;
+    var maxValue = 10000;
     var minValue = 0;
     var index = elementId.indexOf('_');
     if (index > -1) {
